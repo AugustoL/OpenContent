@@ -26,15 +26,6 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
         web3Service.mining.genesisPath = newValues[5];
         web3Service.mining.verbosityLog = newValues[6];
     })
-    console.log = (function (old_function, appLog) {
-        return function (text) {
-            old_function(text);
-            if (appLog){
-                appLog.textContent = appLog.textContent +text;
-                appLog.scrollTop = appLog.scrollHeight;
-            }
-        };
-    } (console.log.bind(console), document.getElementById("appLog")));
 
     $scope.startMining = function(){
         web3Service.startMining();

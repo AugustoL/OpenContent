@@ -1,7 +1,8 @@
 <div ng-if="isSync" ng-controller="postCtrl">
     <div class="box">
+        <div class="small-image pull-left" style="background-image: url('http://goo.gl/{{postData.image}}');"></div>
         <h2 class="post-title">{{postData.title}} </h2>
-        <p class="post-meta">#{{postData.number}}, Block {{p.block}} on tag <a ng-click="openTag(p.tagName)">@{{postData.tagName}}</a> by <a ng-click="openUser(p.author)">@{{postData.author}}</a> - <small><span class="fa fa-thumbs-up"></span> {{postData.up}} - <span class="fa fa-thumbs-down"> {{postData.down}}</span></small></p>
+        <p class="post-meta">#{{postData.number}}, Block {{postData.block}} <br> Tag <a ng-click="openTag(postData.tagName)">@{{postData.tagName}}</a> by <a ng-click="openUser(p.author)">@{{postData.author}}</a> <br> <small><span class="fa fa-thumbs-up cursor-pointer" ng-click="giveUp(postData.address)"></span> {{postData.up}} - <span class="fa fa-thumbs-down cursor-pointer" ng-click="giveDown(postData.address)"> {{postData.down}}</span></small></p>
         <p class="post-text">{{postData.content}}</p>
     </div>
     <div class="box">

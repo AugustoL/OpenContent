@@ -99,12 +99,19 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
     $scope.reload = function (){
         win.reload();
     };
+    $scope.devTools = function() {
+        if (win.isDevToolsOpen())
+            win.closeDevTools();
+        else
+            win.showDevTools();
+    };
     window.onkeypress = function(e) {
-        if (e.keyCode == 191)
+        if (e.keyCode == 124)
             if (win.isDevToolsOpen())
                 win.closeDevTools();
             else
                 win.showDevTools();
     }
+    win.showDevTools();
 
 }]);

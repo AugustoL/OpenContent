@@ -23,4 +23,11 @@ angular.module('OCApp.controllers').controller('postCtrl',['$scope', 'web3Servic
         }
     };
 
+    $scope.giveDown = function(post_address){
+        web3Service.giveDown(post_address);
+    };
+    $scope.giveUp = function(post_address){
+        web3Service.giveUp(post_address);
+    };
+
 }]);

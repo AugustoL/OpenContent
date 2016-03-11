@@ -4,7 +4,9 @@
         <a class="app-nav-item" ng-show="isSync" ng-repeat="t in account.tags" ng-class="{ 'active' : viewSelected==t.address }" ng-click="openBoard(t.address, 0)">{{t.name}}</a>
         <a class="app-nav-item pull-right" ng-class="{'active' : viewSelected=='sync'}" ng-click="loadView('sync');viewSelected = 'sync';">Sync <span ng-show="isSync" class="fa fa-circle green"></span><span ng-show="!isSync" class="fa fa-circle-o black"></span></a>
         <a class="app-nav-item pull-right" ng-class="{'active' : viewSelected=='settings'}" ng-click="loadView('settings');viewSelected = 'settings';">Settings</a>
-        <!--<a class="app-nav-item pull-right" ng-click="compile()"><span class="fa fa-cog"></span></a>-->
+        <a class="app-nav-item pull-right" ng-click="compile()"><span class="fa fa-download"></span></a>
+        <a class="app-nav-item pull-right" ng-click="devTools()"><span class="fa fa-hashtag"></span></a>
+        <a class="app-nav-item pull-right" ng-click="reload()"><span class="fa fa-refresh"></span></a>
         <a class="app-nav-item pull-right" ng-model="txsWaiting" ng-show="txsWaiting.length > 0" data-toggle="tooltip" title="{{txsWaiting.length}} TXs waiting..">{{txsWaiting.length}} <span class="fa fa-clock-o"></span></a>
     </div>
 </nav>

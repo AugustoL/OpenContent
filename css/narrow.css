@@ -7,3 +7,8 @@
 #content{
     min-height: 600px;
 }
+
+.address-colum{
+    max-width: 50px;
+    overflow: hidden;
+}

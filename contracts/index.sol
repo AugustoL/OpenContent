@@ -86,24 +86,36 @@ contract Post {
         return true;
     }
 
-    function giveUp() constant returns (bool){
+    function giveUp(address user_address) constant returns (bool){
         if (index != address(msg.sender))
                 return false;
-        for(uint i = 0; i < up.size; i ++)
-            if (up.array[i] == address(tx.origin))
+        for(uint i = 0; i < down.size; i ++)
+            if (down.array[i] == user_address)
                 return false;
-        up.array[up.size] = address(tx.origin);
+        for(i = 0; i < up.size; i ++)
+            if (up.array[i] == user_address){
+                delete up.array[i];
+                up.size --;
+                return true;
+            }
+        up.array[up.size] = user_address;
         up.size ++;
         return true;
     }
 
-    function giveDown() constant returns (bool){
+    function giveDown(address user_address) constant returns (bool){
         if (index != address(msg.sender))
                 return false;
-        for(uint i = 0; i < down.size; i ++)
-            if (down.array[i] == address(tx.origin))
+        for(uint i = 0; i < up.size; i ++)
+            if (up.array[i] == user_address)
                 return false;
-        down.array[down.size] = address(tx.origin);
+        for(i = 0; i < down.size; i ++)
+            if (down.array[i] == user_address){
+                delete down.array[i];
+                down.size --;
+                return true;
+            }
+        down.array[down.size] = user_address;
         down.size ++;
         return true;
     }
@@ -244,7 +256,7 @@ contract User {
         mapping (uint => address) array;
     }
 
-    function User(address _owner, bytes32 _email, bytes32 _username, bytes32 _name, bytes32 _imageurl,bytes10 _birth, bytes32 _location, bytes32 _url1, bytes32 _url2) {
+    function User(address _owner, bytes32 _email, bytes32 _username, bytes32 _name, bytes32 _imageurl, bytes10 _birth, bytes32 _location, bytes32 _url1, bytes32 _url2) {
         owner = address(_owner);
         index = address(msg.sender);
         email = _email;
@@ -453,7 +465,7 @@ contract OpenContentIndex {
         users.array[users.size] = new User(address(tx.origin), _email, _username, _name, _imageurl, _birth, _location, _url1, _url2 );
         users.size ++;
         log(_username);
-        return false;
+        return true;
     }
 
     function editUser(bytes32 _name, bytes32 _email, bytes32 _imageurl, bytes10 _birth, bytes32 _location, bytes32 _url1, bytes32 _url2) returns (bool) {
@@ -534,6 +546,30 @@ contract OpenContentIndex {
                 for( uint i = 0; i < posts.size; i ++)
                     if (posts.array[i] == post_address){
                         Post(posts.array[i]).addComment(address(tx.origin), block.number, t1, t2, t3);
+                        return true;
+                    }
+        return false;
+    }
+
+    function giveUp(address post_address) constant returns (bool) {
+        log("Giving up to post");
+        for( uint z = 0; z < users.size; z ++)
+            if (User(users.array[z]).getOwner() == address(tx.origin))
+                for( uint i = 0; i < posts.size; i ++)
+                    if (posts.array[i] == post_address){
+                        Post(posts.array[i]).giveUp(address(tx.origin));
+                        return true;
+                    }
+        return false;
+    }
+
+    function giveDown(address post_address) constant returns (bool) {
+        log("Giving down to post");
+        for( uint z = 0; z < users.size; z ++)
+            if (User(users.array[z]).getOwner() == address(tx.origin))
+                for( uint i = 0; i < posts.size; i ++)
+                    if (posts.array[i] == post_address){
+                        Post(posts.array[i]).giveDown(address(tx.origin));
                         return true;
                     }
         return false;

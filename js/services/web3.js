@@ -27,6 +27,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             service.txsWaiting.push(localStorage.txsWaiting);
     }
 
+    var peerCount = web3.net.peerCount;
+    if ((web3) && (web3.net))
+        console.log("Peers connected: "+web3.net.peerCount);
+
     // Mining
     service.mining = {
         passPath : "",
@@ -51,10 +55,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     service.startMining = function(){
         service.stopMining();
         console.log("Start mining");
-        //var child = require('child_process').spawn('geth', ["--genesis", "/home/blackjak/.eth-testnet/genesis.json", "--datadir", "/home/blackjak/.eth-testnet", "--rpc", "--rpcaddr=0.0.0.0", "--verbosity=1", "--maxpeers=0", "--rpccorsdomain=http://localhost:80", "--nodiscover", "--unlock=0", "--password=/home/blackjak/Escritorio/OpenContent/password-testnet", "--mine"]);
-        if ($("#miningLog"))
-            $("#miningLog").append("<p>Executing: geth --genesis "+service.mining.genesisPath+" --datadir "+service.mining.chainDir+" --rpc --verbosity="+service.mining.verbosityLog+" --rpccorsdomain=http://localhost:80 --unlock="+service.mining.mineAccount+" --password="+service.mining.passPath+" --mine</p>")
-        var child = require('child_process').spawn('geth', ["--genesis", service.mining.genesisPath, "--datadir", service.mining.chainDir, "--rpc", "--verbosity="+service.mining.verbosityLog, "--rpccorsdomain=http://localhost:80", "--unlock="+service.mining.mineAccount, "--password="+service.mining.passPath, "--mine"]);
+        var child = require('child_process').spawn('geth', ["--networkid", "666","--genesis", service.mining.genesisPath, "--datadir", service.mining.chainDir, "--rpc", "--verbosity="+service.mining.verbosityLog, "--rpccorsdomain=http://localhost:80", "--unlock="+service.mining.mineAccount, "--password="+service.mining.passPath, "--mine"]);
         child.stdout.on('data', function(data){
             console.log(`${data}`);
         });
@@ -350,6 +351,40 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 if (err)
                     console.error(err);
                 console.log('new post sent');
+                service.txsWaiting.push(tx);
+                localStorage.txsWaiting = service.txsWaiting[0];
+                for (var i = 1; i < service.txsWaiting.length; i++)
+                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
+                checkTxsWaiting();
+            }
+        );
+    };
+
+    service.giveUp = function(post_address) {
+        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).giveUp.sendTransaction(
+            post_address,
+            { from: session.account.address, gas : 700000, to : localStorage.indexAddress },
+            function(err, tx) {
+                if (err)
+                    console.error(err);
+                console.log('Give up sent');
+                service.txsWaiting.push(tx);
+                localStorage.txsWaiting = service.txsWaiting[0];
+                for (var i = 1; i < service.txsWaiting.length; i++)
+                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
+                checkTxsWaiting();
+            }
+        );
+    };
+
+    service.giveDown = function(post_address) {
+        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).giveDown.sendTransaction(
+            post_address,
+            { from: session.account.address, gas : 700000, to : localStorage.indexAddress },
+            function(err, tx) {
+                if (err)
+                    console.error(err);
+                console.log('Give up sent');
                 service.txsWaiting.push(tx);
                 localStorage.txsWaiting = service.txsWaiting[0];
                 for (var i = 1; i < service.txsWaiting.length; i++)

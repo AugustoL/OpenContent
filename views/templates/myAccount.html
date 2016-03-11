@@ -1,6 +1,6 @@
 <div ng-controller="myAccountCtrl" ng-if="isSync" class="box">
     <div ng-show="!showEditAcc">
-        <div class="account-image pull-left" style="background-image: url('http://goo.gl/{{account.image}}');"></div>
+        <div class="small-image pull-left" style="background-image: url('http://goo.gl/{{account.image}}');"></div>
         <h2>{{account.username}} <button class="btn btn-sm pull-right" ng-click="showEditAcc=true">Edit</button></h2>
         <h3>Name: {{account.name}}</h3>
         <h3>Email: {{account.email}}</h3>
