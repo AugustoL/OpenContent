@@ -1,0 +1,26 @@
+<nav class="app-nav">
+    <div class="container">
+        <a class="app-nav-item" ng-show="isSync" ng-class="{ 'active' : viewSelected=='home' }" ng-click="openBoard('0x0',0)"><strong>Home</strong></a>
+        <a class="app-nav-item" ng-show="isSync" ng-repeat="t in account.tags" ng-class="{ 'active' : viewSelected==t.address }" ng-click="openBoard(t.address, 0)">{{t.name}}</a>
+        <a class="app-nav-item pull-right" ng-class="{'active' : viewSelected=='sync'}" ng-click="loadView('sync');viewSelected = 'sync';">Sync <span ng-show="isSync" class="fa fa-circle green"></span><span ng-show="!isSync" class="fa fa-circle-o black"></span></a>
+        <a class="app-nav-item pull-right" ng-class="{'active' : viewSelected=='settings'}" ng-click="loadView('settings');viewSelected = 'settings';">Settings</a>
+        <!--<a class="app-nav-item pull-right" ng-click="compile()"><span class="fa fa-cog"></span></a>-->
+        <a class="app-nav-item pull-right" ng-model="txsWaiting" ng-show="txsWaiting.length > 0" data-toggle="tooltip" title="{{txsWaiting.length}} TXs waiting..">{{txsWaiting.length}} <span class="fa fa-clock-o"></span></a>
+    </div>
+</nav>
+<div class="container">
+    <h4 class="account-navbar" ng-show="isSync">
+        Account -
+        <div class="btn-group">
+            <button class="btn btn-default btn-xs dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            {{selectedAddress}} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li ng-repeat="acc in accounts" ng-click="selectAccount(acc)"><a>{{acc}}</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a>Create</a></li>
+            </ul>
+        </div>
+        <strong class="pull-right" ng-click="refreshBalance()"><span ng-model="balance">{{balance}}</span> Coins</strong>
+    </h4>
+</div>

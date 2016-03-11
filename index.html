@@ -1,0 +1,46 @@
+<html ng-app="OCApp">
+    <head>
+        <title>Open Content</title>
+        <base href="app://opencontent">
+        <link rel="stylesheet" type="text/css" href="app://opencontent/node_modules/font-awesome/css/font-awesome.css" />
+        <link rel="stylesheet" type="text/css" href="app://opencontent/node_modules/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" type="text/css" href="app://opencontent/node_modules/bootstrap/dist/css/bootstrap-theme.css" />
+        <link rel="stylesheet" type="text/css" href="app://opencontent/css/all.css" />
+        <link rel='stylesheet' media="screen and (max-width: 992px)" href="app://opencontent/css/narrow.css" />
+        <link rel='stylesheet' media="screen and (min-width: 992px) and (max-width: 1200px)" href="app://opencontent/css/medium.css" />
+        <link rel='stylesheet' media="screen and (min-width: 1200px)" href="app://opencontent/css/wide.css" />
+        <script src="app://opencontent/node_modules/angular/angular.min.js"></script>
+        <script src="app://opencontent/node_modules/jquery/dist/jquery.min.js"></script>
+        <script src="app://opencontent/node_modules/web3/dist/web3.js"></script>
+        <script src="app://opencontent/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+        <div id="alerts"></div>
+        <div class="navbar" ng-show="!loading"></div>
+        <div class="container" id="content" >
+            <sidebar class="sidebar" ng-show="!loading"></sidebar>
+            <div class="app-main" ng-include src="viewSrc" ng-controller="indexCtrl" ng-show="!loading"></div>
+            <div class="loading-message" ng-show="loading"><i class="fa fa-1x big-o fa-circle-o fa-spin"></i>pen C<i class="fa small-o fa-circle-o-notch fa-spin"></i>ntent</div>
+        </div>
+        <script src="app://opencontent/js/app.js"></script>
+        <script src="app://opencontent/js/controllers/index.js"></script>
+        <script src="app://opencontent/js/controllers/navbar.js"></script>
+        <script src="app://opencontent/js/controllers/sidebar.js"></script>
+        <script src="app://opencontent/js/controllers/views/sync.js"></script>
+        <script src="app://opencontent/js/controllers/views/settings.js"></script>
+        <script src="app://opencontent/js/controllers/views/myAccount.js"></script>
+        <script src="app://opencontent/js/controllers/views/register.js"></script>
+        <script src="app://opencontent/js/controllers/views/myTags.js"></script>
+        <script src="app://opencontent/js/controllers/views/myPosts.js"></script>
+        <script src="app://opencontent/js/controllers/views/user.js"></script>
+        <script src="app://opencontent/js/controllers/views/post.js"></script>
+        <script src="app://opencontent/js/controllers/views/myActions.js"></script>
+        <script src="app://opencontent/js/controllers/views/home.js"></script>
+        <script src="app://opencontent/js/services/web3.js"></script>
+        <script src="app://opencontent/js/services/session.js"></script>
+        <script src="app://opencontent/js/directives/navbar.js"></script>
+        <script src="app://opencontent/js/directives/footer.js"></script>
+        <script src="app://opencontent/js/directives/sidebar.js"></script>
+    </body>
+    <div class="footer" ng-show="!loading"></div>
+</html>

@@ -1,0 +1,9 @@
+
+/* Main column and sidebar layout */
+.app-main {
+    max-width: 780px;
+}
+
+#content{
+    min-height: 700px;
+}

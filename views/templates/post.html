@@ -1,0 +1,23 @@
+<div ng-if="isSync" ng-controller="postCtrl">
+    <div class="box">
+        <h2 class="post-title">{{postData.title}} </h2>
+        <p class="post-meta">#{{postData.number}}, Block {{p.block}} on tag <a ng-click="openTag(p.tagName)">@{{postData.tagName}}</a> by <a ng-click="openUser(p.author)">@{{postData.author}}</a> - <small><span class="fa fa-thumbs-up"></span> {{postData.up}} - <span class="fa fa-thumbs-down"> {{postData.down}}</span></small></p>
+        <p class="post-text">{{postData.content}}</p>
+    </div>
+    <div class="box">
+        Comments:
+        <blockquote ng-repeat="c in comments">
+            <p><a>@{{c.author}}</a> on block #{{c.block}}<br>{{c.text}}</p>
+        </blockquote>
+        Add comment:
+        <div class="form-group">
+            <textarea type="text" class="form-control" id="commentText" ng-model="this.newComment" placeholder="Comment here.. (92 characters max)" maxlength="92"></textarea>
+        </div>
+        <div class="row text-center">
+            <button ng-click="addComment()" class="btn btn-sm btn-default">Comment</button>
+        </div>
+    </div>
+</div>
+<div class="sync-message" ng-if="!isSync">
+    <h2 class="text-center"> <a ng-click="loadView('sync')">Connect</a> to navigate </h2>
+</div>

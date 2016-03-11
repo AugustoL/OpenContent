@@ -1,0 +1,95 @@
+<div class="box" ng-controller="syncCtrl">
+    <div ng-show="!mineForm">
+        <h3 class="box-title">Connect <button class="btn btn-default pull-right" ng-click="mineForm = true"><span class="fa fa-hand-grab-o"></span> Mine</button></h3>
+        <div class="form-inline">
+            <div class="form-group">
+                Verbose:
+                <div class="btn-group">
+                    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{this.verbosityLog}} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li ng-click="this.verbosityLog = 0"><a>0</a></li>
+                        <li ng-click="this.verbosityLog = 1"><a>1</a></li>
+                        <li ng-click="this.verbosityLog = 2"><a>2</a></li>
+                        <li ng-click="this.verbosityLog = 3"><a>3</a></li>
+                        <li ng-click="this.verbosityLog = 4"><a>4</a></li>
+                        <li ng-click="this.verbosityLog = 5"><a>5</a></li>
+                    </ul>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" ng-model="this.connectOnStart"> Connect on start
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            Url:
+            <input type="text" class="form-control" id="connectionURL" ng-model="this.connectionURL" placeholder="Url to your provider">
+        </div>
+        <div class="form-group">
+            Port:
+            <input type="text" class="form-control" id="connectionPort" ng-model="this.connectionPort" placeholder="Port of your provider">
+        </div>
+        <div class="row text-center">
+            <button ng-show="!isConnected" ng-click="connect()" class="btn btn-default">Conenct</button>
+            <button ng-show="isConnected" ng-click="disconnect()" class="btn btn-default">Disconnect</button>
+        </div>
+    </div>
+    <div ng-show="mineForm">
+        <h3 class="box-title">Mine <button class="btn btn-default pull-right" ng-click="mineForm = false"><span class="fa fa-plug"></span> Connect</button></h3>
+        <div class="form-inline">
+            <div class="form-group">
+                Mine Account:
+                <div class="btn-group">
+                    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{mineAccount}} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li ng-repeat="acc in accounts" ng-click="this.mineAccount = $index"><a>{{$index}}</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="form-group">
+                Verbose:
+                <div class="btn-group">
+                    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{this.verbosityLog}} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li ng-click="this.verbosityLog = 0"><a>0</a></li>
+                        <li ng-click="this.verbosityLog = 1"><a>1</a></li>
+                        <li ng-click="this.verbosityLog = 2"><a>2</a></li>
+                        <li ng-click="this.verbosityLog = 3"><a>3</a></li>
+                        <li ng-click="this.verbosityLog = 4"><a>4</a></li>
+                        <li ng-click="this.verbosityLog = 5"><a>5</a></li>
+                    </ul>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" ng-model="this.mineOnStart"> Mine on start
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            Password file:
+            <input type="text" class="form-control" id="passPath" ng-model="this.passPath" placeholder="Path to your password file">
+        </div>
+        <div class="form-group">
+            Genesis file:
+            <input type="text" class="form-control" id="genesisPath" ng-model="this.genesisPath" placeholder="Path to your genesis file">
+        </div>
+        <div class="form-group">
+            Chain directory:
+            <input type="text" class="form-control" id="chainDir" ng-model="this.chainDir" placeholder="Directory of your blockchain">
+        </div>
+        <div class="row text-center">
+            <button ng-show="!isMining" ng-click="startMining()" class="btn btn-default">Start Mining</button>
+            <button ng-show="isMining" ng-click="stopMining()" class="btn btn-default">Stop Mining</button>
+        </div>
+    </div>
+    Log:
+    <pre name="appLog" id="appLog"></pre>
+</div>

@@ -1,0 +1,47 @@
+<div ng-controller="myAccountCtrl" ng-if="isSync" class="box">
+    <div ng-show="!showEditAcc">
+        <div class="account-image pull-left" style="background-image: url('http://goo.gl/{{account.image}}');"></div>
+        <h2>{{account.username}} <button class="btn btn-sm pull-right" ng-click="showEditAcc=true">Edit</button></h2>
+        <h3>Name: {{account.name}}</h3>
+        <h3>Email: {{account.email}}</h3>
+        <h3>Location: {{account.location}}</h3>
+        <h3>BirthDate: {{account.birth}}</h3>
+        <h4><a href="#">{{account.url1}}</a></h4>
+        <h4><a href="#">{{account.url2}}</a></h4>
+    </div>
+    <div ng-show="showEditAcc">
+        <h3 class="box-title"> Edit Account </h3>
+        <div class="form-group">
+            <label for="emailInput">Email address</label>
+            <input type="email" class="form-control" id="emailInput" ng-model="this.editUser.email" placeholder="Email">
+        </div>
+        <div class="form-group">
+            <label for="nameInput">Name</label>
+            <input type="text" class="form-control" id="nameInput" ng-model="this.editUser.name" placeholder="Name">
+        </div>
+        <div class="form-group">
+            <label for="birthInput">Birthdate</label>
+            <input type="text" class="form-control" id="birthInput" ng-model="this.editUser.birth" placeholder="Birthdate">
+        </div>
+        <div class="form-group">
+            <label for="locationInput">Location</label>
+            <input type="text" class="form-control" id="locationInput" ng-model="this.editUser.location" placeholder="Location">
+        </div>
+        <div class="form-group">
+            <label for="imageUrl">Image Url</label>
+            <input type="text" class="form-control" id="imageUrl" ng-model="this.editUser.image" placeholder="Url">
+        </div>
+        <div class="form-group">
+            <label for="urlOneInput">Extra Url #1</label>
+            <input type="text" class="form-control" id="urlOneInput" ng-model="this.editUser.url1" placeholder="Url">
+        </div>
+        <div class="form-group">
+            <label for="urlTwoInput">Extra Url #2</label>
+            <input type="text" class="form-control" id="urlTwoInput" ng-model="this.editUser.url2" placeholder="Url">
+        </div>
+        <button ng-click="editAccount()" class="btn btn-default">Submit</button> <button ng-click="showEditAcc=false" class="btn btn-link">Back</button>
+    </div>
+</div>
+<div class="sync-message" ng-if="!isSync">
+    <h2 class="text-center"> <a ng-click="loadView('sync')">Connect</a> to navigate </h2>
+</div>

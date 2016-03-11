@@ -1,0 +1,27 @@
+<div ng-if="isSync">
+    <div ng-model="loadingHome" ng-show="!loadingHome">
+        <div class="box" ng-show="posts.length > 0" ng-repeat="p in posts">
+            <h2 class="post-title cursor-pointer" ng-click="openPost(p.address)">{{p.title}} </h2>
+            <p class="post-meta">#{{p.number}}, Block {{p.block}} on tag <a ng-click="openTag(p.tagName)">@{{p.tagName}}</a> by <a ng-click="openUser(p.author)">@{{p.author}}</a> - <small><span class="fa fa-thumbs-up"></span> 0 - <span class="fa fa-thumbs-down"> 0</span></small></p>
+            <p class="post-text">{{p.content}}</p>
+        </div>
+        <div class="box" ng-show="posts.length == 0">
+            <h2 class="text-center"> No posts to show </h2>
+        </div>
+        <nav ng-show="posts.length > 10" >
+            <ul class="pager text-center">
+                <li class="pull-left"><a>First</a></li>
+                <li class="pull-left"><a>Previous</a></li>
+                <li class="text-center"><a>{{page}}</a></li>
+                <li class="pull-right"><a>Last</a></li>
+                <li class="pull-right"><a>Next</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div ng-model="loadingHome" class="box text-center" ng-show="loadingHome">
+        <i class="fa fa-3x fa-circle-o-notch fa-spin"></i>
+    </div>
+</div>
+<div class="sync-message" ng-if="!isSync">
+    <h2 class="text-center"> <a ng-click="loadView('sync')">Connect</a> to navigate </h2>
+</div>
