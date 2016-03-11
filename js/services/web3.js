@@ -26,11 +26,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         else
             service.txsWaiting.push(localStorage.txsWaiting);
     }
-
-    var peerCount = web3.net.peerCount;
-    if ((web3) && (web3.net))
+    /*
+    if ((web3) && (web3.net.peerCount))
         console.log("Peers connected: "+web3.net.peerCount);
-
+    */
     // Mining
     service.mining = {
         passPath : "",
