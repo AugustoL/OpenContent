@@ -1,9 +1,9 @@
-<div ng-if="isSync">
+<div ng-controller="homeCtrl" ng-show="isSync">
     <div ng-model="loadingHome" ng-show="!loadingHome">
         <div class="box" ng-show="posts.length > 0" ng-repeat="p in posts">
             <div class="small-image pull-left" style="background-image: url('http://goo.gl/{{p.image}}');"></div>
             <h2 class="post-title cursor-pointer" ng-click="openPost(p.address)">{{p.title}} </h2>
-            <p class="post-meta">#{{p.number}}, Block {{p.block}} <br> Tag <a ng-click="openTag(p.tagName)">@{{p.tagName}}</a> by <a ng-click="openUser(p.author)">@{{p.author}}</a> <br> <small><span class="fa fa-thumbs-up"></span> {{p.up}} - <span class="fa fa-thumbs-down"> {{p.down}}</span></small></p>
+            <p class="post-meta">#{{p.number}}, Block {{p.block}} <br> Board <a ng-click="openBoard(p.boardName)">@{{p.boardName}}</a> by <a ng-click="openUser(p.authorAddress)">@{{p.author}}</a> <br> <small><span class="fa fa-thumbs-up"></span> {{p.up}} - <span class="fa fa-thumbs-down"> {{p.down}}</span></small></p>
             <p class="post-text">{{p.content}}</p>
         </div>
         <div class="box" ng-show="posts.length == 0">
@@ -23,6 +23,6 @@
         <i class="fa fa-3x fa-circle-o-notch fa-spin"></i>
     </div>
 </div>
-<div class="sync-message" ng-if="!isSync">
+<div class="sync-message" ng-show="!isSync">
     <h2 class="text-center"> <a ng-click="loadView('sync')">Connect</a> to navigate </h2>
 </div>

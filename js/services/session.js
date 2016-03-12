@@ -15,14 +15,13 @@ angular.module( 'OCApp.services' ).factory('session', ['$rootScope', function($r
         image : "",
         url1 : "",
         url2 : "",
-        tags_size : 0,
+        boards_size : 0,
         posts_size : 0
     };
 
     service.loadAccounts = function(accounts){
         service.accounts = accounts;
-        console.log("Accounts loaded");
-        console.log(service.accounts);
+        console.log(service.accounts.length+" Accounts loaded");
         $rootScope.$broadcast('accountsLoaded', service.accounts);
     };
 
@@ -36,15 +35,14 @@ angular.module( 'OCApp.services' ).factory('session', ['$rootScope', function($r
         service.account.image = user.image;
         service.account.url1 = user.url1;
         service.account.url2 = user.url2;
-        service.account.tags_size = user.tags_size;
+        service.account.boards_size = user.boards_size;
         service.account.posts_size = user.posts_size;
-        service.account.tags = user.tags;
+        service.account.boards = user.boards;
         if (service.account.username == "")
             service.account.registered = false;
         else
             service.account.registered = true;
-        console.log("Account loaded");
-        console.log(service.account);
+        console.log("Account loaded: "+service.account.address);
         $rootScope.$broadcast('accountChange', service.account);
     };
 

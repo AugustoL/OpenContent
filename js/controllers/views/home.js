@@ -6,17 +6,6 @@ angular.module('OCApp.controllers').controller('homeCtrl',['$scope', 'web3Servic
         $scope.boardAddress = '0x0';
     $scope.posts = [];
 
-    if (!$scope.indexInfo)
-        $scope.indexInfo = {
-            posts : 0,
-            users : 0,
-            tags : 0
-        }
-
-    $rootScope.$on('indexLoaded', function(event, data) {
-        $scope.indexInfo = data;
-    });
-
     $scope.$on('boardChange', function(event, data) {
         $scope.boardAddress = data.board;
         $scope.page = data.page;
@@ -24,25 +13,26 @@ angular.module('OCApp.controllers').controller('homeCtrl',['$scope', 'web3Servic
     });
 
     $scope.loadPosts = function(){
-        console.log('loading posts of '+$scope.boardAddress);
         var limit = parseInt($scope.page*10);
         $scope.posts = [];
         if (limit == 0)
             limit = 10;
         if ($scope.boardAddress == '0x0'){
-            for (var i = 0; i < limit; i++) {
-                if (i < $scope.indexInfo.posts)
-                $scope.posts.push(web3Service.getHomePost(i));
-            }
+            console.log('Loading posts of home');
+            for (var i = 0; i < limit; i++)
+                if (i < parseInt($scope.indexInfo.posts))
+                    $scope.posts.push(web3Service.getHomePost(i));
         } else {
-            var tagInfo = web3Service.getTagInfo($scope.boardAddress);
-            console.log(parseInt(tagInfo[1]));
-            for (var i = 0; i < limit; i++) {
-                if (i < parseInt(tagInfo[1]))
-                    $scope.posts.push(web3Service.getTagPost($scope.boardAddress ,i));
-            }
+            console.log('Loading posts of board'+$scope.boardAddress);
+            var boardInfo = web3Service.getBoardInfo($scope.boardAddress);
+            for (var i = 0; i < limit; i++)
+                if (i < parseInt(boardInfo[2]))
+                    $scope.posts.push(web3Service.getBoardPost($scope.boardAddress ,i));
         }
+        console.log($scope.posts);
         $scope.loadingHome = false;
     }
+
+    $scope.loadPosts();
 
 }]);

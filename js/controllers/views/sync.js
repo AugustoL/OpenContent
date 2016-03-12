@@ -6,7 +6,7 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
     $scope.verbosityLog = web3Service.mining.verbosityLog;
     $scope.mineAccount  = web3Service.mining.mineAccount;
     $scope.connectOnStart = false;
-    $scope.mineForm = false;
+    $scope.mineForm = true;
 
     $scope.isMining = web3Service.isMining();
 

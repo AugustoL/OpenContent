@@ -1,6 +1,6 @@
-<div class="box" ng-controller="syncCtrl">
+<div class="box" ng-class="{'sync-message' : !isSync}" ng-controller="syncCtrl">
     <div ng-show="!mineForm">
-        <h3 class="box-title">Connect <button class="btn btn-default pull-right" ng-click="mineForm = true"><span class="fa fa-hand-grab-o"></span> Mine</button></h3>
+        <h3 class="box-title">Connect <button class="btn btn-sm btn-default pull-right" ng-click="mineForm = true"><span class="fa fa-hand-grab-o"></span> Mine</button></h3>
         <div class="form-inline">
             <div class="form-group">
                 Verbose:
@@ -38,7 +38,7 @@
         </div>
     </div>
     <div ng-show="mineForm">
-        <h3 class="box-title">Mine <button class="btn btn-default pull-right" ng-click="mineForm = false"><span class="fa fa-plug"></span> Connect</button></h3>
+        <h3 class="box-title">Mine <button class="btn btn-sm btn-default pull-right" ng-click="mineForm = false"><span class="fa fa-plug"></span> Connect</button></h3>
         <div class="form-inline">
             <div class="form-group">
                 Mine Account:

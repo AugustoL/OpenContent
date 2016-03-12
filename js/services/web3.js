@@ -26,10 +26,12 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         else
             service.txsWaiting.push(localStorage.txsWaiting);
     }
-    /*
-    if ((web3) && (web3.net.peerCount))
+    try{
         console.log("Peers connected: "+web3.net.peerCount);
-    */
+    } catch (e){
+        console.error(e);
+    }
+
     // Mining
     service.mining = {
         passPath : "",
@@ -83,26 +85,32 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         service.startMining();
 
     function loadContract(){
-        readContract('index', function( err, compiled ){
+        readContract(function( err, compiled ){
             if (err)
                 console.error(err);
-            service.indexContract = compiled;
+            service.indexContract = JSON.parse(compiled);
             web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).log().watch(function(error, result){
                 console.log($filter('hexToString')(result.args.message));
             });
             web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).logInt().watch(function(error, result){
                 console.log(parseInt(result.args.message));
             });
+            web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).logAddress().watch(function(error, result){
+                console.log(result.args.message);
+            });
             var indexInfo = web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).getIndexInfo.call();
             var index_info = {
                 version : $filter("hexToString")(indexInfo[0]),
                 users : parseInt(indexInfo[1]),
-                tags : parseInt(indexInfo[2]),
+                boards : parseInt(indexInfo[2]),
                 posts : parseInt(indexInfo[3])
             };
-            $rootScope.$broadcast('indexLoaded', index_info);
-            console.log("Version "+$filter("hexToString")(indexInfo[0])+","+parseInt(indexInfo[1])+" Users"+","+parseInt(indexInfo[2])+" Tags"+","+parseInt(indexInfo[3])+" Posts");
+            service.indexInfo = index_info;
+            $rootScope.$broadcast('appUpdate', service);
+            console.log("Version "+index_info.version+","+index_info.users+" Users"+","+index_info.boards+" Boards"+","+index_info.posts+" Posts");
+            $rootScope.isSync = true;
             $rootScope.loading = false;
+            $rootScope.$broadcast('appUpdate', service);
         });
     }
 
@@ -143,15 +151,15 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         return service.getUserByAddress(user_address);
     };
 
-    service.getUserTag = function (address, i) {
-        return web3.eth.contract(service.indexContract.User.info.abiDefinition).at(address).getTag.call(i);
+    service.getUserBoard = function (address, i) {
+        return web3.eth.contract(service.indexContract.User.info.abiDefinition).at(address).getBoard.call(i);
     };
 
-    service.getTagInfo = function (address) {
-        return web3.eth.contract(service.indexContract.Tag.info.abiDefinition).at(address).getInfo.call();
+    service.getBoardInfo = function (address) {
+        return web3.eth.contract(service.indexContract.Board.info.abiDefinition).at(address).getInfo.call();
     };
 
-    service.getPostData = function (post_address) {
+    service.getPostData = function(post_address) {
         var post_data = web3.eth.contract(service.indexContract.Post.info.abiDefinition).at(post_address).getData.call();
         var post_content = web3.eth.contract(service.indexContract.Post.info.abiDefinition).at(post_address).getContent.call();
         var content_string = "";
@@ -160,8 +168,9 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         return {
             address : post_address,
             author : service.getUserByAddress(post_data[0]).username,
-            tag : post_data[1],
-            tagName : $filter('hexToString')(service.getTagInfo(post_data[1])[0]),
+            authorAddress : post_data[0],
+            board : post_data[1],
+            boardName : $filter('hexToString')(service.getBoardInfo(post_data[1])[1]),
             title : $filter('hexToString')(post_data[2]),
             image : $filter('hexToString')(post_data[3]),
             comments : parseInt(post_data[4]),
@@ -192,8 +201,8 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         return service.getPostData(post_address);
     };
 
-    service.getTagPost = function (address, i) {
-        var post_address = web3.eth.contract(service.indexContract.Tag.info.abiDefinition).at(address).getPost.call(i);
+    service.getBoardPost = function (address, i) {
+        var post_address = web3.eth.contract(service.indexContract.Board.info.abiDefinition).at(address).getPost.call(i);
         return service.getPostData(post_address);
     };
 
@@ -209,7 +218,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             url1 : "",
             url2 : "",
             posts_size : 0,
-            tags_size : 0
+            boards_size : 0
         }
         if (!web3.currentProvider.isConnected())
             return user;
@@ -228,7 +237,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             image : $filter('hexToString')(profile[6]),
             url1 : $filter('hexToString')(profile[7]),
             url2 : $filter('hexToString')(profile[8]),
-            tags_size : parseInt(data[3]),
+            boards_size : parseInt(data[3]),
             posts_size : parseInt(data[4])
         }
         return user;
@@ -238,17 +247,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         return web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).getIndexInfo.call();
     };
 
-    service.createUser = function (name, username, email, location, birth, urlimg, urlone, urltwo) {
+    service.createUser = function(username) {
         web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).createUser.sendTransaction(
-            email.toString(),
             username.toString(),
-            name.toString(),
-            urlimg.toString(),
-            birth.toString(),
-            location.toString(),
-            urlone.toString(),
-            urltwo.toString(),
-            { from: session.account.address, gas : 700000, to : localStorage.indexAddress },
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
             function(err, tx) {
                 if (err)
                     console.error(err);
@@ -267,7 +269,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             text[0].toString(),
             text[1].toString(),
             text[2].toString(),
-            { from: session.account.address, gas : 700000, to : localStorage.indexAddress },
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
             function(err, tx) {
                 if (err)
                     console.error(err);
@@ -289,7 +291,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             web3.toHex(location.toString()),
             web3.toHex(urlone.toString()),
             web3.toHex(urltwo.toString()),
-            { from: session.account.address, gas : 700000, to : localStorage.indexAddress },
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
             function(err, tx) {
                 if (err)
                     console.error(err);
@@ -303,7 +305,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     };
 
     service.deleteUser = function () {
-        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).deleteUser.sendTransaction(session.account.address,{ from: session.account.address, gas : 700000, to : localStorage.indexAddress },
+        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).deleteUser.sendTransaction(session.account.address,{ from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
             function(err, tx) {
                 if (err)
                     console.error(err);
@@ -316,10 +318,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         );
     };
 
-    service.createTag = function (name) {
-        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).createTag.sendTransaction(
+    service.createBoard = function (name) {
+        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).createBoard.sendTransaction(
             web3.toHex(name.toString()),
-            { from: session.account.address, gas : 700000, to : localStorage.indexAddress },
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
             function(err, tx) {
                 if (err)
                     console.error(err);
@@ -332,9 +334,11 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         );
     };
 
-    service.createPost = function (tag, title, image, bytesArray) {
+    service.createPost = function (board_address, title, image, bytesArray) {
+        console.log(board_address);
         web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).createPost.sendTransaction(
-            tag,
+            session.account.contract.toString(),
+            board_address.toString(),
             web3.toHex(title.toString()),
             web3.toHex(image.toString()),
             bytesArray[0].toString(),
@@ -345,7 +349,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             bytesArray[5].toString(),
             bytesArray[6].toString(),
             bytesArray[7].toString(),
-            { from: session.account.address, gas : 700000, to : localStorage.indexAddress },
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
             function(err, tx) {
                 if (err)
                     console.error(err);
@@ -362,7 +366,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     service.giveUp = function(post_address) {
         web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).giveUp.sendTransaction(
             post_address,
-            { from: session.account.address, gas : 700000, to : localStorage.indexAddress },
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
             function(err, tx) {
                 if (err)
                     console.error(err);
@@ -379,11 +383,78 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     service.giveDown = function(post_address) {
         web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).giveDown.sendTransaction(
             post_address,
-            { from: session.account.address, gas : 700000, to : localStorage.indexAddress },
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
             function(err, tx) {
                 if (err)
                     console.error(err);
                 console.log('Give up sent');
+                service.txsWaiting.push(tx);
+                localStorage.txsWaiting = service.txsWaiting[0];
+                for (var i = 1; i < service.txsWaiting.length; i++)
+                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
+                checkTxsWaiting();
+            }
+        );
+    };
+
+    service.removeBoard = function(board_address) {
+        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).removeBoardOnUser.sendTransaction(
+            board_address,
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
+            function(err, tx) {
+                if (err)
+                    console.error(err);
+                console.log('Removing Board');
+                service.txsWaiting.push(tx);
+                localStorage.txsWaiting = service.txsWaiting[0];
+                for (var i = 1; i < service.txsWaiting.length; i++)
+                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
+                checkTxsWaiting();
+            }
+        );
+    };
+
+    service.deleteBoard = function(board_address) {
+        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).removeBoard.sendTransaction(
+            board_address,
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
+            function(err, tx) {
+                if (err)
+                    console.error(err);
+                console.log('Deleting Board');
+                service.txsWaiting.push(tx);
+                localStorage.txsWaiting = service.txsWaiting[0];
+                for (var i = 1; i < service.txsWaiting.length; i++)
+                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
+                checkTxsWaiting();
+            }
+        );
+    };
+
+    service.deletePost = function(post_address) {
+        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).removePost.sendTransaction(
+            post_address,
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
+            function(err, tx) {
+                if (err)
+                    console.error(err);
+                console.log('Removing Post');
+                service.txsWaiting.push(tx);
+                localStorage.txsWaiting = service.txsWaiting[0];
+                for (var i = 1; i < service.txsWaiting.length; i++)
+                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
+                checkTxsWaiting();
+            }
+        );
+    };
+
+    service.deleteAccount = function() {
+        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).removeUser.sendTransaction(
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
+            function(err, tx) {
+                if (err)
+                    console.error(err);
+                console.log('Deleting my user');
                 service.txsWaiting.push(tx);
                 localStorage.txsWaiting = service.txsWaiting[0];
                 for (var i = 1; i < service.txsWaiting.length; i++)
@@ -406,7 +477,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         if ((txsWatingLength > 0) || (service.txsWaiting.length > 0 )){
             console.log("Checking "+service.txsWaiting.length+" txs..");
             if (txsWatingLength != service.txsWaiting.length)
-                $rootScope.$broadcast('txsChecked',service.txsWaiting)
+                $rootScope.$broadcast('appUpdate', service);
             txsWatingLength = +service.txsWaiting.length;
             if (service.txsWaiting)
                 for (var i = 0; i < service.txsWaiting.length; i++)
@@ -421,7 +492,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                         }
                     }
             if (txsWatingLength != service.txsWaiting.length)
-                $rootScope.$broadcast('txsChecked',service.txsWaiting);
+                $rootScope.$broadcast('appUpdate', service);
             txsWatingLength = +service.txsWaiting.length;
         }
     }
@@ -436,50 +507,68 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             return false;
     }
 
-    function readContract(name, callback){
-        fs.readFile( "/home/blackjak/Escritorio/OpenContent/contracts/"+name+".sol", function (err, data) {
+    function readContract(callback){
+        fs.readFile( "contracts/index.txt", function (err, data) {
+            if (err)
+                callback(err) ;
+            console.log("Contract loaded.");
+            callback(null, data.toString());
+        });
+    }
+
+    function compileContract(callback){
+        fs.readFile( "contracts/index.sol", function (err, data) {
             if (err)
                 callback(err) ;
             var w8 = setInterval( function() {
                 if (!web3.eth.syncing) {
                     clearInterval(w8);
                     var compiled = web3.eth.compile.solidity( data.toString('utf-8') );
-                    console.log("Contract " + name + " loaded.");
-                    callback(null, compiled);
+                    fs.writeFile('contracts/index.txt', JSON.stringify(compiled), function (err) {
+                        if (err) console.error(err);
+                        console.log("Contract compiled.");
+                        callback(null);
+                    });
                 }
             }, 1000 );
         });
     }
 
     service.createIndex = function(callback){
-        readContract('index', function( err, compiled ){
-            if (err)
-                console.error(err);
-            service.indexContract = compiled;
+        compileContract(function(err){
+            if (err) console.error(err);
 
-            console.log(parseInt(web3.eth.estimateGas({ to: "", data: service.indexContract.OpenContentIndex.code })));
+            readContract(function( err, compiled ){
+                if (err)
+                    console.error(err);
+                service.indexContract = JSON.parse(compiled);
 
-            web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).new({ from : session.account.address, data : service.indexContract.OpenContentIndex.code, gas : 5000000 }, function(err, contract){
-                if(!err) {
-                    if(!contract.address) {
-                        console.log("Contract Index waiting to be mined...");
+                console.log(parseInt(web3.eth.estimateGas({ to: "", data: service.indexContract.OpenContentIndex.code })));
+
+                web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).new({ from : web3.eth.accounts[0], data : service.indexContract.OpenContentIndex.code, gas : 5000000 }, function(err, contract){
+                    if(!err) {
+                        if(!contract.address) {
+                            console.log("Contract Index waiting to be mined...");
+                        } else {
+                            console.log("Contract Index mined! Address: " + contract.address);
+                            localStorage.indexAddress = contract.address;
+        					web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).log().watch(function(error, result){
+                                console.log($filter('hexToString')(result.args.message));
+        					});
+                            web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).logInt().watch(function(error, result){
+                                console.log(parseInt(result.args.message));
+        					});
+                            web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).logAddress().watch(function(error, result){
+                                console.log(result.args.message);
+                            });
+                            callback(null, "done");
+                        }
                     } else {
-                        console.log("Contract Index mined! Address: " + contract.address);
-                        localStorage.indexAddress = contract.address;
-    					web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).log().watch(function(error, result){
-                            console.log($filter('hexToString')(result.args.message));
-    					});
-                        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).logInt().watch(function(error, result){
-                            console.log(parseInt(result.args.message));
-    					});
-                        callback(null, "done");
+                        console.error(err.toString());
+                        callback(err);
                     }
-                } else {
-                    console.error(err.toString());
-                    callback(err);
-                }
+                });
             });
-
         });
     };
 

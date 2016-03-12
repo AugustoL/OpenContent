@@ -1,6 +1,6 @@
 <div ng-controller="myPostsCtrl" ng-if="isSync" class="box">
     <div ng-show="!viewForm">
-        <h3 class="box-title">My Posts <button class="btn btn-default pull-right" ng-click="viewForm = true"><span class="fa fa-plus"></span> Post</button></h3>
+        <h3 class="box-title">My Posts <button class="btn btn-sm btn-default pull-right" ng-click="viewForm = true"><span class="fa fa-plus"></span> Post</button></h3>
         <table class="table">
             <thead>
                 <tr> <th>#</th> <th>Title</th> <th>Comments</th> <th class="text-center"><span class="fa fa-thumbs-up"></span></th> <th class="text-center"><span class="fa fa-thumbs-down"></span></th><th class="text-center">Actions</th></tr>
@@ -22,14 +22,14 @@
         </table>
     </div>
     <div ng-show="viewForm">
-        <h3 class="box-title">Create Post<button class="btn btn-default pull-right" ng-click="viewForm = false"><span class="fa fa-arrow-left"></span> Back</button></h3>
+        <h3 class="box-title">Create Post<button class="btn btn-sm btn-default pull-right" ng-click="viewForm = false"><span class="fa fa-arrow-left"></span> Back</button></h3>
         <div class="form-group">
             <div class="input-group">
                 <input type="text" class="form-control" id="titlePost" ng-model="this.postTitle" placeholder="Title">
                 <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{this.tagSelected.name}} <span class="caret"></span></button>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{this.boardSelected.name}} <span class="caret"></span></button>
                         <ul class="dropdown-menu dropdown-menu-right">
-                        <li ng-repeat="t in account.tags" ng-click="selectTag(t)"><a>{{t.name}}</a></li>
+                        <li ng-repeat="t in account.boards" ng-click="selectBoard(t)"><a>{{t.name}}</a></li>
                     </ul>
                 </div>
             </div>

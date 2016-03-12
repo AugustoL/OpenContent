@@ -5,4 +5,6 @@ angular.module('OCApp.controllers').controller('sidebarCtrl',['$scope','session'
         $scope.isRegistered = data.registered;
     });
 
+    $scope.isRegistered = session.account.registered;
+
 }]);

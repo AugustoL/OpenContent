@@ -31,4 +31,8 @@ angular.module('OCApp.controllers').controller('myAccountCtrl',['$scope','web3Se
             console.log('Too much bytes');
         }
     };
+
+    $scope.deleteAccount = function(){
+        web3Service.deleteAccount();
+    }
 }]);

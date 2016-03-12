@@ -1,27 +1,37 @@
 {
-  "name": "OpenContent",
-  "description": "Open Content platform app.",
-  "version": "0.1.0",
-  "main": "app://opencontent/index.html",
-  "window": {
-    "show": true,
-    "toolbar": false,
-    "frame": true,
-    "position": "center",
-    "width": 800,
-    "height": 800,
-    "min_width": 800,
-    "min_height": 600,
-    "icon": "res/logo.png"
-  },
-  "scripts": {
-    "start": "nw ."
-  },
-  "dependencies": {
-    "font-awesome": "~4.5.0",
-    "angular": "~1.5.0",
-    "bootstrap": "~3.3.6",
-    "web3": "~0.15.3",
-    "jquery": "~2.2.1"
-  }
+    "name": "OpenContent",
+    "description": "Open Content platform app.",
+    "version": "0.1.1",
+    "main": "app://opencontent/index.html",
+    "author": {
+        "name" : "Augusto Lemble",
+        "email" : "me@augustolemble.com"
+    },
+    "repository" : {
+        "type" : "git",
+        "url" : "https://github.com/AugustoL/OpenContent.git"
+    },
+    "homepage": "https://github.com/AugustoL/OpenContent",
+    "window": {
+        "show": true,
+        "toolbar": false,
+        "frame": true,
+        "position": "center",
+        "width": 800,
+        "height": 800,
+        "min_width": 800,
+        "min_height": 600,
+        "icon": "res/logo.png"
+    },
+    "scripts": {
+        "start": "nw .",
+        "build": "node build"
+    },
+    "dependencies": {
+        "font-awesome": "~4.5.0",
+        "angular": "~1.5.0",
+        "bootstrap": "~3.3.6",
+        "web3": "~0.15.3",
+        "jquery": "~2.2.1"
+    }
 }

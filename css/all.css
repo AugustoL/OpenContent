@@ -182,6 +182,12 @@ a{
     margin-top: 8px;
     margin-bottom: 8px;
 }
+.input-edit{
+    width: 230px !important;
+}
+.form-inline .form-control{
+    width: 230px;
+}
 
 /* Sidebar module */
 
@@ -279,6 +285,14 @@ a{
 }
 
 /* Useful clases */
+
+.margin-top-form{
+    margin-top: 10px;
+}
+
+.total-width{
+    width: 100%;
+}
 
 .no-margin-top{
     margin-top: 0px;

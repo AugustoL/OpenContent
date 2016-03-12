@@ -1,8 +1,5 @@
 angular.module('OCApp.controllers').controller('indexCtrl',['$scope','web3Service','$rootScope','$controller','session', function($scope, web3Service, $rootScope, $controller, session){
 
-    $rootScope.$on('accountChange', function(event, data) {
-        $scope.account = data;
-    });
     $scope.addAlert = function(type, message) {
         $("#alerts").append("<div class=\"alert alert-"+type+" alert-dismissible\" role=\"alert\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>"+message+"</div>")
     }
@@ -11,6 +8,7 @@ angular.module('OCApp.controllers').controller('indexCtrl',['$scope','web3Servic
     //$scope.addAlert('info', 'message');
     //$scope.addAlert('success', 'message');
     //$scope.addAlert('danger', 'message');
+
     $rootScope.loadView = function(view){
         $scope.account = session.account;
         $scope.accounts = session.accounts;
@@ -22,15 +20,13 @@ angular.module('OCApp.controllers').controller('indexCtrl',['$scope','web3Servic
         localStorage.view = view;
 	};
 
-    $scope.loadView("home");
-
     $scope.openPost = function(address){
         $scope.postAddress = address;
         $scope.loadView('post');
     }
 
     $scope.openUser = function(user){
-        $scope.userSelected = user;
+        $scope.userProfile = web3Service.getUserByAddress(user);
         $scope.loadView('user');
     }
 

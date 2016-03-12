@@ -4,9 +4,9 @@ angular.module('OCApp.controllers').controller('myPostsCtrl',['$scope','web3Serv
     $scope.postTitle = "";
     $scope.postImage = "";
     $scope.postContent = "";
-    $scope.tagSelected = $scope.account.tags[0];
-    $scope.selectTag = function(t){
-        $scope.tagSelected = t;
+    $scope.boardSelected = $scope.account.boards[0];
+    $scope.selectBoard = function(t){
+        $scope.boardSelected = t;
     }
     $scope.viewForm = false;
 
@@ -32,11 +32,14 @@ angular.module('OCApp.controllers').controller('myPostsCtrl',['$scope','web3Serv
                 $scope.bytesArray.push("0x0000000000000000000000000000000000000000000000000000000000000000");
         }
         if ( ($scope.postContent.toString().length <= 248) && ($scope.postTitle.toString().length <= 32) && ($scope.postImage.toString().length <= 32) ){
-            web3Service.createPost($scope.tagSelected.address, $scope.postTitle, $scope.postImage, $scope.bytesArray);
+            web3Service.createPost($scope.boardSelected.address, $scope.postTitle, $scope.postImage, $scope.bytesArray);
         } else {
             console.log('Too much bytes');
         }
     };
 
+    $scope.deletePost = function(address){
+        web3Service.deletePost(address);
+    }
 
 }]);

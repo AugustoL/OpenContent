@@ -1,8 +1,9 @@
 contract Post {
 
     address private owner;
+    address private author;
     address private index;
-    address private tag;
+    address private board;
     bytes32 private title;
     bytes32 private image;
     Comments private comments;
@@ -30,10 +31,11 @@ contract Post {
         bytes32 t3;
     }
 
-    function Post(address _owner, address _tag, bytes32 _title, bytes32 _image, bytes32 c1, bytes32 c2, bytes32 c3, bytes32 c4, bytes32 c5, bytes32 c6, bytes32 c7, bytes32 c8) {
+    function Post(address _owner, address _author, address _board, bytes32 _title, bytes32 _image, bytes32 c1, bytes32 c2, bytes32 c3, bytes32 c4, bytes32 c5, bytes32 c6, bytes32 c7, bytes32 c8) {
         owner = address(_owner);
+        author = address(_author);
         index = address(msg.sender);
-        tag = address(_tag);
+        board = address(_board);
         title = _title;
         image = _image;
         content[0] = c1;
@@ -55,11 +57,15 @@ contract Post {
     }
 
     function getData() constant returns (address, address, bytes32, bytes32, uint, uint, uint, uint, uint) {
-        return (owner, tag, title, image, comments.size, up.size, down.size, block, number);
+        return (owner, board, title, image, comments.size, up.size, down.size, block, number);
     }
 
     function getContent() constant returns (bytes32, bytes32, bytes32, bytes32, bytes32, bytes32, bytes32, bytes32) {
         return (content[0], content[1], content[2], content[3], content[4], content[5], content[6], content[7]);
+    }
+
+    function getBoard() constant returns (address) {
+        return board;
     }
 
     function getComment(uint index) constant returns (address, uint, bytes32, bytes32, bytes32) {
@@ -69,7 +75,8 @@ contract Post {
     }
 
     function destroy() {
-        if ((index != address(msg.sender)) && (owner == address(tx.origin))) suicide(owner);
+        if (index != address(msg.sender))
+            suicide(owner);
     }
 
     function addComment(address _user, uint _block, bytes32 _t1, bytes32 _t2, bytes32 _t3) constant returns (bool) {
@@ -94,7 +101,13 @@ contract Post {
                 return false;
         for(i = 0; i < up.size; i ++)
             if (up.array[i] == user_address){
-                delete up.array[i];
+                if (i == (up.size-1)){
+                    delete up.array[i];
+                } else {
+                    for(uint z = i; z < up.size; z ++)
+                        up.array[z] = up.array[z+1];
+                    delete up.array[up.size-1];
+                }
                 up.size --;
                 return true;
             }
@@ -111,7 +124,13 @@ contract Post {
                 return false;
         for(i = 0; i < down.size; i ++)
             if (down.array[i] == user_address){
-                delete down.array[i];
+                if (i == (down.size-1)){
+                    delete down.array[i];
+                } else {
+                    for(uint z = i; z < down.size; z ++)
+                        down.array[z] = down.array[z+1];
+                    delete down.array[down.size-1];
+                }
                 down.size --;
                 return true;
             }
@@ -126,7 +145,7 @@ contract Post {
 
 }
 
-contract Tag {
+contract Board {
 
     address private owner;
     address private index;
@@ -139,24 +158,25 @@ contract Tag {
         mapping (uint => address) array;
     }
 
-    function Tag(address _owner, bytes32 _name) {
+    function Board(address _owner, bytes32 _name) {
         name = _name;
-        index = address(msg.sender);
-        owner = address(_owner);
+        index = msg.sender;
+        owner = _owner;
         posts = aArray(0);
         users = aArray(0);
     }
 
     function destroy() {
-        if ((index != address(msg.sender)) && (owner == address(tx.origin))) suicide(owner);
+        if (index != address(msg.sender))
+            suicide(owner);
     }
 
     function getName() constant returns (bytes32) {
         return name;
     }
 
-    function getInfo() constant returns (bytes32, uint, uint) {
-        return (name, posts.size, users.size);
+    function getInfo() constant returns (address, bytes32, uint, uint) {
+        return (owner, name, posts.size, users.size);
     }
 
     function getOwner() constant returns (address) {
@@ -177,11 +197,11 @@ contract Tag {
         return 0x0;
     }
 
-    function addPost(address new_post_address, address author) constant returns (bool) {
+    function addPostOnBoard(address _user, address post_address) constant returns (bool)  {
         if (index == address(msg.sender))
             for( uint i = 0; i < users.size; i ++)
-                if (users.array[i] == author) {
-                    posts.array[posts.size] = new_post_address;
+                if (users.array[i] == address(_user)){
+                    posts.array[posts.size] = address(post_address);
                     posts.size ++;
                     return true;
                 }
@@ -196,10 +216,8 @@ contract Tag {
                 if (i == (posts.size-1)){
                     delete posts.array[i];
                 } else {
-                    for( uint z = i + 1; z < posts.size; z ++){
+                    for( uint z = i + 1; z < posts.size; z ++)
                         posts.array[z-1] = posts.array[z];
-                        z ++;
-                    }
                     delete posts.array[posts.size-1];
                 }
                 posts.size --;
@@ -248,7 +266,7 @@ contract User {
     bytes32 private location;
     bytes32 private url1;
     bytes32 private url2;
-    aArray private tags;
+    aArray private boards;
     aArray private posts;
 
     struct aArray {
@@ -256,23 +274,16 @@ contract User {
         mapping (uint => address) array;
     }
 
-    function User(address _owner, bytes32 _email, bytes32 _username, bytes32 _name, bytes32 _imageurl, bytes10 _birth, bytes32 _location, bytes32 _url1, bytes32 _url2) {
+    function User(address _owner, bytes32 _username) {
         owner = address(_owner);
         index = address(msg.sender);
-        email = _email;
         username = _username;
-        name = _name;
-        imageurl = _imageurl;
-        birth = _birth;
-        location = _location;
-        url1 = _url1;
-        url2 = _url2;
-        tags = aArray(0);
+        boards = aArray(0);
         posts = aArray(0);
     }
 
-    function edit(bytes32 _name, bytes32 _email, bytes32 _imageurl, bytes10 _birth, bytes32 _location, bytes32 _url1, bytes32 _url2) constant returns ( bool ) {
-        if ((owner != address(address(tx.origin))) || (index != address(msg.sender)))
+    function edit(address _owner, bytes32 _name, bytes32 _email, bytes32 _imageurl, bytes10 _birth, bytes32 _location, bytes32 _url1, bytes32 _url2) constant returns ( bool ) {
+        if ((owner != _owner) || (index != address(msg.sender)))
             return false;
         name = _name;
         email = _email;
@@ -284,20 +295,20 @@ contract User {
         return true;
     }
 
-    function addTag(address tag_address) constant returns ( bool ) {
-        if ((owner != address(tx.origin)) || (index != address(msg.sender)))
+    function addBoard(address board_address) constant returns ( bool ) {
+        if (index != address(msg.sender))
             return false;
-        for(uint i = 0; i < tags.size; i ++)
-            if (tags.array[i] == tag_address)
+        for(uint i = 0; i < boards.size; i ++)
+            if (boards.array[i] == board_address)
                 return false;
-        tags.array[tags.size] = tag_address;
-        tags.size ++;
+        boards.array[boards.size] = board_address;
+        boards.size ++;
         return true;
     }
 
-    function getTag(uint i) constant returns (address) {
-        if (i < tags.size)
-            return (tags.array[i]);
+    function getBoard(uint i) constant returns (address) {
+        if (i < boards.size)
+            return (boards.array[i]);
         return 0x0;
     }
 
@@ -307,27 +318,27 @@ contract User {
         return 0x0;
     }
 
-    function removeTag(address tag_address) constant returns ( bool ) {
-        if ((owner != address(tx.origin)) || (index != address(msg.sender)))
+    function removeBoard(address board_address) constant returns ( bool ) {
+        if (index != address(msg.sender))
             return false;
-        for( uint i = 0; i < tags.size; i ++)
-            if ((tags.array[i] == tag_address) && (Tag(tags.array[i]).getOwner() == address(tx.origin))) {
-                if (i == (tags.size-1)){
-                    delete tags.array[i];
+        for( uint i = 0; i < boards.size; i ++)
+            if (boards.array[i] == board_address) {
+                if (i == (boards.size-1)){
+                    delete boards.array[i];
                 } else {
-                    for( uint z = i; z < tags.size; z ++)
-                        tags.array[z] = tags.array[z+1];
-                    delete tags.array[tags.size-1];
+                    for( uint z = i; z < boards.size; z ++)
+                        boards.array[z] = boards.array[z+1];
+                    delete boards.array[boards.size-1];
                 }
-                tags.size --;
+                boards.size --;
                 return true;
             }
         return false;
     }
 
-    function insertPost(address post_address) constant returns (bool) {
+    function addPostOnUser(address post_address) constant returns (bool) {
         if (index == address(msg.sender)){
-            posts.array[posts.size] = post_address;
+            posts.array[posts.size] = address(post_address);
             posts.size ++;
             return true;
         }
@@ -335,10 +346,10 @@ contract User {
     }
 
     function removePost(address post_address) constant returns (bool) {
-        if ((address(tx.origin) != Post(post_address).getOwner()) || (owner != tx.origin) || (index != address(msg.sender)))
+        if (index != address(msg.sender))
             return false;
         for( uint i = 0; i < posts.size; i ++)
-            if ((posts.array[i] == post_address) && (Post(posts.array[i]).getOwner() == address(tx.origin))) {
+            if (posts.array[i] == post_address) {
                 if (i == (posts.size-1)){
                     Post(posts.array[i]).destroy();
                     delete posts.array[i];
@@ -355,7 +366,7 @@ contract User {
     }
 
     function destroy () {
-        if ((owner != address(tx.origin)) || (index != address(msg.sender)))
+        if (index != address(msg.sender))
             suicide(owner);
     }
 
@@ -364,7 +375,7 @@ contract User {
     }
 
     function getData() constant returns (address, bytes32, bytes32, uint, uint) {
-        return (address(this), username, name, uint(tags.size), uint(posts.size));
+        return (address(this), username, name, uint(boards.size), uint(posts.size));
     }
 
     function getProfile() constant returns (address, bytes32, bytes32, bytes32, bytes32, bytes10, bytes32, bytes32, bytes32) {
@@ -379,9 +390,9 @@ contract User {
 
 contract OpenContentIndex {
 
-    bytes32 constant version = "0.1.0";
+    bytes32 constant version = "0.1.1";
 
-    aArray private tags;
+    aArray private boards;
     aArray private users;
     aArray private posts;
 
@@ -396,120 +407,115 @@ contract OpenContentIndex {
 
     function OpenContentIndex() {
         users = aArray(0);
-        tags = aArray(0);
+        boards = aArray(0);
         posts = aArray(0);
-        log("Created");
     }
 
     function getIndexInfo()constant returns (bytes32, uint, uint, uint) {
-        return (version, users.size, tags.size, posts.size);
+        return (version, users.size, boards.size, posts.size);
     }
 
 /*--------------------------------------------- TAGS ---------------------------------------------*/
 
-    function createTag( bytes32 new_tag_name ) constant returns (bool) {
-        log('Creating tag..');
-        for( uint i = 0; i < tags.size; i ++)
-            if (Tag(tags.array[i]).getName() == bytes32(new_tag_name))
+    function createBoard( bytes32 new_board_name ) constant returns (bool) {
+        for( uint i = 0; i < boards.size; i ++)
+            if (Board(boards.array[i]).getName() == bytes32(new_board_name))
                 return false;
         for(uint z = 0; z < users.size; z ++)
             if (User(users.array[z]).getOwner() == address(tx.origin)){
-                Tag newTag = new Tag(address(tx.origin), new_tag_name);
-                newTag.addUser(address(tx.origin));
-                tags.array[tags.size] = address(newTag);
-                tags.size ++;
-                User(users.array[z]).addTag(address(newTag));
-                log('Created !');
+                Board newBoard = new Board(address(tx.origin), new_board_name);
+                newBoard.addUser(User(users.array[z]));
+                boards.array[boards.size] = address(newBoard);
+                boards.size ++;
+                User(users.array[z]).addBoard(address(newBoard));
                 return true;
             }
         return false;
     }
 
-    function deleteTag(address tag_address) constant returns ( bool ) {
-        if (address(tx.origin) != Tag(tag_address).getOwner())
+    function removeBoard(address board_address) constant returns ( bool ) {
+        if (address(tx.origin) != Board(board_address).getOwner())
             return false;
-        log("Removing Tag");
-        for( uint i = 0; i < tags.size; i ++)
-            if ((tags.array[i] == tag_address) && (Tag(tags.array[i]).getOwner() == address(tx.origin))) {
-                if (i == (tags.size-1)){
-                    Tag(tags.array[i]).destroy();
-                    delete tags.array[i];
-                    log("Removed last");
+        for( uint i = 0; i < boards.size; i ++)
+            if (boards.array[i] == board_address){
+                if (i == (boards.size-1)){
+                    Board(boards.array[i]).destroy();
+                    delete boards.array[i];
                 } else {
-                    for( uint z = i; z < tags.size; z ++)
-                        tags.array[z] = tags.array[z+1];
-                    Tag(tags.array[tags.size-1]).destroy();
-                    delete tags.array[tags.size-1];
-                    log("Removed middle");
+                    for( uint z = i; z < boards.size; z ++)
+                        boards.array[z] = boards.array[z+1];
+                    Board(boards.array[boards.size-1]).destroy();
+                    delete boards.array[boards.size-1];
                 }
-                tags.size --;
-                return true;
+                for(i = 0; i < users.size; i ++)
+                    if (User(users.array[i]).getOwner() == address(tx.origin)){
+                        Board(board_address).removeUser(User(users.array[i]));
+                        User(users.array[i]).removeBoard(board_address);
+                        boards.size --;
+                        return true;
+                    }
             }
         return false;
     }
 
-    function getTagInfo(address tag_address) constant returns (bytes32, uint, uint) {
-        for( uint i = 0; i < tags.size; i ++)
-            if ( address(tags.array[i]) == tag_address )
-                return Tag(tags.array[i]).getInfo();
-        return ("", 0, 0);
+    function getBoardInfo(address board_address) constant returns (address, bytes32, uint, uint) {
+        for( uint i = 0; i < boards.size; i ++)
+            if ( address(boards.array[i]) == board_address )
+                return Board(boards.array[i]).getInfo();
+        return (0x0, "", 0, 0);
     }
 
 /*--------------------------------------------- USERS ---------------------------------------------*/
 
-    function createUser(bytes32 _email, bytes32 _username, bytes32 _name, bytes32 _imageurl, bytes10 _birth, bytes32 _location, bytes32 _url1, bytes32 _url2) constant returns (bool){
-        log("Adding user to index");
+    function createUser(bytes32 _username) constant returns (bool){
         for( uint i = 0; i < users.size; i ++)
             if ((User(users.array[i]).getUsername() == _username) || (User(users.array[i]).getOwner() == address(tx.origin)))
                 return false;
-        users.array[users.size] = new User(address(tx.origin), _email, _username, _name, _imageurl, _birth, _location, _url1, _url2 );
+        users.array[users.size] = new User(address(tx.origin), _username);
         users.size ++;
-        log(_username);
         return true;
     }
 
     function editUser(bytes32 _name, bytes32 _email, bytes32 _imageurl, bytes10 _birth, bytes32 _location, bytes32 _url1, bytes32 _url2) returns (bool) {
-        log("Editing user");
         for( uint i = 0; i < users.size; i ++)
             if (User(users.array[i]).getOwner() == address(tx.origin)) {
-                User(users.array[i]).edit(_name, _email, _imageurl, _birth, _location, _url1, _url2);
+                User(users.array[i]).edit(address(tx.origin), _name, _email, _imageurl, _birth, _location, _url1, _url2);
                 return true;
             }
         return false;
     }
 
-    function addTagOnUser(address tag_address) returns (bool) {
-        log("Adding tag on user");
+    function addBoardOnUser(address board_address) returns (bool) {
         for( uint i = 0; i < users.size; i ++)
-            if (User(users.array[i]).getOwner() == address(tx.origin))
-                if (Tag(tag_address).addUser(tx.origin))
-                    return User(users.array[i]).addTag(tag_address);
+            if (User(users.array[i]).getOwner() == address(tx.origin)){
+                Board(board_address).addUser(User(users.array[i]));
+                User(users.array[i]).addBoard(board_address);
+                return true;
+            }
         return false;
     }
 
-    function removeTagOnUser(address tag_address) returns (bool) {
-        log("Removing tag on user");
+    function removeBoardOnUser(address board_address) returns (bool) {
         for( uint i = 0; i < users.size; i ++)
-            if (User(users.array[i]).getOwner() == address(tx.origin))
-                if (Tag(tag_address).removeUser(address(tx.origin)))
-                    return User(users.array[i]).removeTag(tag_address);
+            if (User(users.array[i]).getOwner() == address(tx.origin)){
+                Board(board_address).removeUser(User(users.array[i]));
+                User(users.array[i]).removeBoard(board_address);
+                return true;
+            }
         return false;
     }
 
-    function deleteUser() constant returns (bool) {
-        log("Removing user");
+    function removeUser() constant returns (bool) {
         for( uint i = 0; i < users.size; i ++)
-            if ((users.array[i] == address(tx.origin)) && (User(users.array[i]).getOwner() == address(tx.origin))) {
+            if (User(users.array[i]).getOwner() == address(tx.origin)){
                 if (i == (users.size-1)){
                     User(users.array[i]).destroy();
                     delete users.array[i];
-                    log("Removed last");
                 } else {
                     for( uint z = i; z < users.size; z ++)
                         users.array[z] = users.array[z+1];
                     User(users.array[users.size-1]).destroy();
                     delete users.array[users.size-1];
-                    log("Removed middle");
                 }
                 users.size --;
                 return true;
@@ -517,9 +523,9 @@ contract OpenContentIndex {
         return false;
     }
 
-    function getUserByUsername(bytes32 username) constant returns (address) {
+    function getUserByUsername(bytes32 _username) constant returns (address) {
         for( uint i = 0; i < users.size; i ++)
-            if ( User(users.array[i]).getUsername() == username )
+            if (User(users.array[i]).getUsername() == _username)
                 return User(users.array[i]);
         return (0x0);
     }
@@ -540,7 +546,6 @@ contract OpenContentIndex {
     }
 
     function addComment(address post_address, bytes32 t1, bytes32 t2, bytes32 t3) constant returns (bool) {
-        log("Adding comment");
         for( uint z = 0; z < users.size; z ++)
             if (User(users.array[z]).getOwner() == address(tx.origin))
                 for( uint i = 0; i < posts.size; i ++)
@@ -552,7 +557,6 @@ contract OpenContentIndex {
     }
 
     function giveUp(address post_address) constant returns (bool) {
-        log("Giving up to post");
         for( uint z = 0; z < users.size; z ++)
             if (User(users.array[z]).getOwner() == address(tx.origin))
                 for( uint i = 0; i < posts.size; i ++)
@@ -564,7 +568,6 @@ contract OpenContentIndex {
     }
 
     function giveDown(address post_address) constant returns (bool) {
-        log("Giving down to post");
         for( uint z = 0; z < users.size; z ++)
             if (User(users.array[z]).getOwner() == address(tx.origin))
                 for( uint i = 0; i < posts.size; i ++)
@@ -575,37 +578,33 @@ contract OpenContentIndex {
         return false;
     }
 
-    function createPost(address _tag, bytes32 _title, bytes32 _image, bytes32 c1, bytes32 c2, bytes32 c3, bytes32 c4, bytes32 c5, bytes32 c6, bytes32 c7, bytes32 c8) returns (bool) {
-        log("Adding post on user 0");
-        for( uint i = 0; i < users.size; i ++){
-            if (User(users.array[i]).getOwner() == address(tx.origin)){
-                for( uint z = 0; z < tags.size; z ++){
-                    if (tags.array[z] == address(_tag)){
-                        log("Adding post on user 1");
-                        Post newPost = new Post(address(tx.origin), tags.array[z], _title, _image, c1, c2, c3, c4, c5, c6, c7, c8);
-                        newPost.setIds(posts.size, block.number);
-                        Tag(tags.array[z]).addPost(address(newPost), address(tx.origin));
-                        User(users.array[i]).insertPost(address(newPost));
-                        posts.array[posts.size] = address(newPost);
-                        posts.size ++;
-                        log("ADDED !!");
-                        return true;
-                    }
-                }
-            }
+    function createPost(address _user, address _board, bytes32 _title, bytes32 _image, bytes32 c1, bytes32 c2, bytes32 c3, bytes32 c4, bytes32 c5, bytes32 c6, bytes32 c7, bytes32 c8) returns (bool) {
+        if (User(address(_user)).getOwner() == address(tx.origin)){
+            Post newPost = new Post(address(tx.origin), address(_user), _board, _title, _image, c1, c2, c3, c4, c5, c6, c7, c8);
+            Board(address(_board)).addPostOnBoard(address(_user), address(newPost));
+            Post(address(newPost)).setIds(posts.size, block.number);
+            User(address(_user)).addPostOnUser(address(newPost));
+            posts.array[posts.size] = address(newPost);
+            posts.size ++;
+            return true;
         }
         return false;
     }
 
-    function deletePost(address post_address, address tag_address) returns (bool) {
-        log("Removing post on user");
+    function removePost(address post_address) returns (bool) {
         for( uint i = 0; i < posts.size; i ++)
-            if ((posts.array[i] == post_address) && (Post(posts.array[i]).getOwner() == address(tx.origin)))
+            if ((posts.array[i] == post_address) && (Post(posts.array[i]).getOwner() == address(tx.origin)) )
                 for( uint z = 0; z < users.size; z ++)
                     if (User(users.array[z]).getOwner() == address(tx.origin)){
-                        Tag(tag_address).removePost(post_address);
+                        Board(Post(posts.array[i]).getBoard()).removePost(post_address);
                         User(users.array[z]).removePost(post_address);
-                        delete posts.array[i];
+                        if (i == (posts.size-1)){
+                            delete posts.array[i];
+                        } else {
+                            for(z = i; z < posts.size; z ++)
+                                posts.array[z] = posts.array[z+1];
+                            delete posts.array[posts.size-1];
+                        }
                         posts.size --;
                         return true;
                     }
