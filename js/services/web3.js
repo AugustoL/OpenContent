@@ -85,10 +85,12 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         service.startMining();
 
     function loadContract(){
-        readContract(function( err, compiled ){
+        readContract(function( err, compiled, address){
             if (err)
                 console.error(err);
             service.indexContract = JSON.parse(compiled);
+            service.indexAddress = address;
+            console.log(service.indexAddress);
             web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).log().watch(function(error, result){
                 console.log($filter('hexToString')(result.args.message));
             });
@@ -106,7 +108,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 posts : parseInt(indexInfo[3])
             };
             service.indexInfo = index_info;
-            $rootScope.$broadcast('appUpdate', service);
             console.log("Version "+index_info.version+","+index_info.users+" Users"+","+index_info.boards+" Boards"+","+index_info.posts+" Posts");
             $rootScope.isSync = true;
             $rootScope.loading = false;
@@ -508,11 +509,15 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     }
 
     function readContract(callback){
-        fs.readFile( "contracts/index.txt", function (err, data) {
+        fs.readFile( "contracts/index.txt", function (err, contract) {
             if (err)
                 callback(err) ;
-            console.log("Contract loaded.");
-            callback(null, data.toString());
+            fs.readFile( "contracts/indexAddress.txt", function (err, address) {
+                if (err)
+                    callback(err) ;
+                console.log("Contract loaded.");
+                callback(null, contract.toString(), address.toString());
+            });
         });
     }
 
@@ -525,9 +530,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                     clearInterval(w8);
                     var compiled = web3.eth.compile.solidity( data.toString('utf-8') );
                     fs.writeFile('contracts/index.txt', JSON.stringify(compiled), function (err) {
-                        if (err) console.error(err);
+                        if (err)
+                            console.error(err);
                         console.log("Contract compiled.");
-                        callback(null);
+                        callback(compiled);
                     });
                 }
             }, 1000 );
@@ -535,39 +541,33 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     }
 
     service.createIndex = function(callback){
-        compileContract(function(err){
-            if (err) console.error(err);
-
-            readContract(function( err, compiled ){
-                if (err)
-                    console.error(err);
-                service.indexContract = JSON.parse(compiled);
-
-                console.log(parseInt(web3.eth.estimateGas({ to: "", data: service.indexContract.OpenContentIndex.code })));
-
-                web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).new({ from : web3.eth.accounts[0], data : service.indexContract.OpenContentIndex.code, gas : 5000000 }, function(err, contract){
-                    if(!err) {
-                        if(!contract.address) {
-                            console.log("Contract Index waiting to be mined...");
-                        } else {
-                            console.log("Contract Index mined! Address: " + contract.address);
-                            localStorage.indexAddress = contract.address;
-        					web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).log().watch(function(error, result){
-                                console.log($filter('hexToString')(result.args.message));
-        					});
-                            web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).logInt().watch(function(error, result){
-                                console.log(parseInt(result.args.message));
-        					});
-                            web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).logAddress().watch(function(error, result){
-                                console.log(result.args.message);
-                            });
-                            callback(null, "done");
-                        }
+        compileContract(function(compiled){
+            web3.eth.contract(compiled.OpenContentIndex.info.abiDefinition).new({ from : web3.eth.accounts[0], data : compiled.OpenContentIndex.code, gas : 5000000 }, function(err, contract){
+                if(!err) {
+                    if(!contract.address) {
+                        console.log("Contract Index waiting to be mined...");
                     } else {
-                        console.error(err.toString());
-                        callback(err);
+                        console.log("Contract Index mined! Address: " + contract.address);
+                        localStorage.indexAddress = contract.address;
+    					web3.eth.contract(compiled.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).log().watch(function(error, result){
+                            console.log($filter('hexToString')(result.args.message));
+    					});
+                        web3.eth.contract(compiled.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).logInt().watch(function(error, result){
+                            console.log(parseInt(result.args.message));
+    					});
+                        web3.eth.contract(compiled.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).logAddress().watch(function(error, result){
+                            console.log(result.args.message);
+                        });
+                        fs.writeFile('contracts/indexAddress.txt', contract.address, function (err) {
+                            if (err) console.error(err);
+                            console.log("Contract address saved.");
+                            callback(null, "done");
+                        });
                     }
-                });
+                } else {
+                    console.error(err.toString());
+                    callback(err);
+                }
             });
         });
     };

@@ -6,6 +6,15 @@ angular.module('OCApp.controllers').controller('homeCtrl',['$scope', 'web3Servic
         $scope.boardAddress = '0x0';
     $scope.posts = [];
 
+    $scope.indexInfo = {
+        version: "",
+        posts: 0
+    };
+
+    $rootScope.$on('appUpdate', function(event, data) {
+        $scope.indexInfo = data.indexInfo;
+    });
+
     $scope.$on('boardChange', function(event, data) {
         $scope.boardAddress = data.board;
         $scope.page = data.page;
