@@ -12,7 +12,7 @@ angular.module('OCApp.controllers').controller('registerCtrl',['$scope','web3Ser
     }
     $scope.createAccount = function(){
         if ($scope.newUser.username.length <= 32){
-            web3Service.createUser($scope.newUser.username);
+            web3Service.createAccount($scope.newUser.username);
         }
     };
 }]);

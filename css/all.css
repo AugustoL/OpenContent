@@ -250,8 +250,7 @@ a{
 
 /* Mine */
 
-#miningLog{
-    max-height: 500px;
+.peerID{
     background-color: white;
 }
 
@@ -296,6 +295,10 @@ a{
 
 .no-margin-top{
     margin-top: 0px;
+}
+
+.number-input{
+    width: 60px !important;
 }
 
 .green{

@@ -4,12 +4,7 @@ angular.module('OCApp.controllers').controller('indexCtrl',['$scope','web3Servic
         $("#alerts").append("<div class=\"alert alert-"+type+" alert-dismissible\" role=\"alert\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>"+message+"</div>")
     }
 
-    //$scope.addAlert('warning', 'message');
-    //$scope.addAlert('info', 'message');
-    //$scope.addAlert('success', 'message');
-    //$scope.addAlert('danger', 'message');
-
-    $rootScope.loadView = function(view){
+    $rootScope.loadView = function(view,callback){
         $scope.account = session.account;
         $scope.accounts = session.accounts;
         if (view == 'home')
@@ -18,6 +13,8 @@ angular.module('OCApp.controllers').controller('indexCtrl',['$scope','web3Servic
         $scope.viewSrc = "views/templates/"+view+".html";
         $scope.view = view;
         localStorage.view = view;
+        if (callback)
+            callback(true);
 	};
 
     $scope.openPost = function(address){

@@ -1,4 +1,4 @@
-<div class="box" ng-if="isSync">
+<div class="box" ng-if="isConnected">
     <div class="small-image pull-left" style="background-image: url('http://goo.gl/{{userProfile.image}}');"></div>
     <h2>{{userProfile.username}}</h2>
     <h3>Name: {{userProfile.name}}</h3>
@@ -8,6 +8,6 @@
     <h4><a>{{userProfile.url1}}</a></h4>
     <h4><a>{{userProfile.url2}}</a></h4>
 </div>
-<div class="sync-message" ng-if="!isSync">
+<div class="sync-message" ng-if="!isConnected">
     <h2 class="text-center"> <a ng-click="loadView('sync')">Connect</a> to navigate </h2>
 </div>

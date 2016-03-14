@@ -1,4 +1,4 @@
-<div ng-controller="myAccountCtrl" ng-if="isSync" class="box">
+<div ng-controller="myAccountCtrl" ng-if="isConnected" class="box">
     <div ng-show="!showEditAcc">
         <div class="small-image pull-left" style="background-image: url('http://goo.gl/{{account.image}}');"></div>
         <h2>{{account.username}} <button class="btn btn-sm pull-right" ng-click="showEditAcc=true">Edit</button></h2>
@@ -68,6 +68,6 @@
         </div>
     </div>
 </div>
-<div class="sync-message" ng-if="!isSync">
+<div class="sync-message" ng-if="!isConnected">
     <h2 class="text-center"> <a ng-click="loadView('sync')">Connect</a> to navigate </h2>
 </div>

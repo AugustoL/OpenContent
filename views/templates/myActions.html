@@ -1,6 +1,6 @@
-<div class="box" ng-if="isSync">
+<div class="box" ng-if="isConnected">
     <h3 class="box-title"> My Actions </h3>
 </div>
-<div class="sync-message" ng-if="!isSync">
+<div class="sync-message" ng-if="!isConnected">
     <h2 class="text-center"> <a ng-click="loadView('sync')">Connect</a> to navigate </h2>
 </div>

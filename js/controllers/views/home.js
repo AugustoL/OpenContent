@@ -16,8 +16,8 @@ angular.module('OCApp.controllers').controller('homeCtrl',['$scope', 'web3Servic
     });
 
     $scope.$on('boardChange', function(event, data) {
-        $scope.boardAddress = data.board;
         $scope.page = data.page;
+        $scope.boardAddress = data.board;
         $scope.loadPosts();
     });
 
@@ -27,19 +27,16 @@ angular.module('OCApp.controllers').controller('homeCtrl',['$scope', 'web3Servic
         if (limit == 0)
             limit = 10;
         if ($scope.boardAddress == '0x0'){
-            console.log('Loading posts of home');
             for (var i = 0; i < limit; i++)
                 if (i < parseInt($scope.indexInfo.posts))
                     $scope.posts.push(web3Service.getHomePost(i));
         } else {
-            console.log('Loading posts of board'+$scope.boardAddress);
             var boardInfo = web3Service.getBoardInfo($scope.boardAddress);
             for (var i = 0; i < limit; i++)
                 if (i < parseInt(boardInfo[2]))
                     $scope.posts.push(web3Service.getBoardPost($scope.boardAddress ,i));
         }
         console.log($scope.posts);
-        $scope.loadingHome = false;
     }
 
     $scope.loadPosts();

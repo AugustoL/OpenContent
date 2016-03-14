@@ -1,7 +1,44 @@
-angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootScope', '$filter', function (session, $rootScope, $filter) {
+angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootScope', '$filter','$http', function (session, $rootScope, $filter, $http) {
 
     var service = {};
     var fs = require( "fs" );
+    $rootScope.loading = true;
+    $rootScope.isConnected = false;
+
+    service.startGeth = function() {
+        var child = require('child_process').spawn('geth', ["--networkid", "666","--genesis", localStorage.genesisPath, "--datadir", localStorage.chainDir, "--rpc", "--verbosity="+localStorage.verbosityLog, "--rpcaddr", localStorage.connectionHost, "--rpcport", localStorage.connectionPort, "--rpccorsdomain=http://localhost:80", "--rpcapi", "admin,eth,miner,net,personal,web3"]);
+        child.stdout.on('data', function(data){
+            console.log(`${data}`);
+        });
+        child.stderr.on('data', function(data) {
+            console.log(`${data}`);
+        });
+        child.on('close', function(code) {
+            console.log(`child process exited with code ${code}`);
+        });
+        child.on('exit', function(code) {
+            console.log(`child process exited.`);
+        });
+        localStorage.gethPid = child.pid;
+        $rootScope.loading = true;
+        console.log('Connected');
+        setTimeout( function() {
+            web3.setProvider(new web3.providers.HttpProvider("http://localhost:8545"));
+            if (web3.currentProvider.isConnected()){
+                loadContract();
+                $rootScope.loading = false;
+            }
+        }, 5000 );
+    }
+    if (localStorage.autoConnect == "true")
+        service.startGeth();
+
+    service.stopGeth = function() {
+        require('child_process').exec('kill -9 '+localStorage.gethPid);
+        console.log('Disconnected');
+        $rootScope.status = "disconnected";
+        window.location.reload();
+    }
 
     // Web3
     var web3 = null;
@@ -11,12 +48,11 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         var Web3 = require("web3");
         web3 = new Web3();
     }
-    $rootScope.loading = true;
+    $rootScope.status = "disconnected";
     web3.setProvider(new web3.providers.HttpProvider("http://localhost:8545"));
-    if (web3.currentProvider.isConnected())
+    if (web3.currentProvider.isConnected()){
         loadContract();
-    else
-        $rootScope.loading = false;
+    }
 
     service.txsWaiting = [];
     if (localStorage.txsWaiting && localStorage.txsWaiting.toString().length > 1){
@@ -32,57 +68,88 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         console.error(e);
     }
 
-    // Mining
-    service.mining = {
-        passPath : "",
-        genesisPath : "",
-        chainDir : "",
-        verbosityLog : "",
-        mineAccount : 0,
-        active : false,
-        miner : null
+    service.unloackAccount = function(address,password,callback){
+        postGeth('personal_unlockAccount',[address,password],function(err,result){
+            callback(err,result);
+        });
     };
-    if (localStorage.passPath)
-        service.mining.passPath = localStorage.passPath;
-    if (localStorage.genesisPath)
-        service.mining.genesisPath = localStorage.genesisPath;
-    if (localStorage.chainDir)
-        service.mining.chainDir = localStorage.chainDir;
-    if (localStorage.verbosityLog)
-        service.mining.verbosityLog = localStorage.verbosityLog;
-    if (localStorage.mineAccount)
-        service.mining.mineAccount = localStorage.mineAccount;
 
-    service.startMining = function(){
-        service.stopMining();
-        console.log("Start mining");
-        var child = require('child_process').spawn('geth', ["--networkid", "666","--genesis", service.mining.genesisPath, "--datadir", service.mining.chainDir, "--rpc", "--verbosity="+service.mining.verbosityLog, "--rpccorsdomain=http://localhost:80", "--unlock="+service.mining.mineAccount, "--password="+service.mining.passPath, "--mine"]);
-        child.stdout.on('data', function(data){
-            console.log(`${data}`);
-        });
-        child.stderr.on('data', function(data) {
-            console.log(`${data}`);
-        });
-        child.on('close', function(code) {
-            console.log(`child process exited with code ${code}`);
-        });
-        child.on('exit', function(code) {
-            console.log(`child process exited.`);
-        });
-        service.mining.miner = child;
-        localStorage.mineChild = child.pid;
-        service.mining.active = true;
-        loadContract();
+    service.newAddress = function(password){
+        postGeth('personal_newAccount',[password],function(err,address){
+            if (err)
+                console.error(err);
+            else
+                console.log(address+" created.");
+        })
     }
+
+    service.createAccount = function(username){
+        console.log("Creating account using "+session.account.address);
+        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).createUser.sendTransaction(
+            username.toString(),
+            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
+            function(err, tx) {
+                if (err)
+                    console.error(err);
+                service.txsWaiting.push(tx);
+                localStorage.txsWaiting = service.txsWaiting[0];
+                for (var i = 1; i < service.txsWaiting.length; i++)
+                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
+                checkTxsWaiting();
+            }
+        );
+    }
+
+    service.isMining = function(callback){
+        postGeth('eth_mining','',function(err,result){
+            if (err){
+                console.error(err);
+                callback(false);
+            } else{
+                callback(result);
+            }
+        })
+    }
+
+    service.startMining = function(address,callback){
+        postGeth('eth_mining','',function(err,result){
+            if (err)
+                callback(err);
+            else
+                if (!result){
+                    postGeth('miner_start',1,function(err,result){
+                        if (err)
+                            callback(err);
+                        else{
+                            postGeth('miner_setEtherbase',[address],function(err,result){
+                                if (err)
+                                    callback(err);
+                                else{
+                                    $rootScope.status = 'mining';
+                                    callback(null,result);
+                                }
+                            })
+                        }
+                    })
+                }
+        })
+    };
 
     service.stopMining = function(){
-        console.log("Stop mining, proccess: "+localStorage.mineChild);
-        require('child_process').exec('kill -9 '+localStorage.mineChild);
-        service.mining.active = false;
+        postGeth('eth_mining','',function(err,result){
+            if (err)
+                console.error(err);
+            else
+                if (result){
+                    postGeth('miner_stop','',function(err,result){
+                        if (err)
+                            console.error(err);
+                        else
+                            $rootScope.status = 'connected';
+                    })
+                }
+        })
     }
-
-    if (localStorage.mineOnStart == "true")
-        service.startMining();
 
     function loadContract(){
         readContract(function( err, compiled, address){
@@ -109,10 +176,39 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             };
             service.indexInfo = index_info;
             console.log("Version "+index_info.version+","+index_info.users+" Users"+","+index_info.boards+" Boards"+","+index_info.posts+" Posts");
-            $rootScope.isSync = true;
+            $rootScope.status = "connected";
+            if (localStorage.autoMine == "true")
+                service.startMining();
+            service.isMining(function(result) {
+                if (result)
+                    $rootScope.status = "mining";
+            })
+            $rootScope.isConnected = true;
             $rootScope.loading = false;
             $rootScope.$broadcast('appUpdate', service);
         });
+    }
+
+    service.getNodeInfo = function(callback){
+        postGeth('admin_nodeInfo','',function(err,result){
+            if (err){
+                console.error(err);
+                callback(false);
+            } else{
+                callback(result);
+            }
+        })
+    }
+
+    service.addPeer = function(peer, callback){
+        postGeth('admin_addPeer',[peer],function(err,result){
+            if (err){
+                console.error(err);
+                callback(err);
+            } else{
+                callback(null,result);
+            }
+        })
     }
 
     service.toHex = function(string){
@@ -124,13 +220,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             return web3.eth.defaultAccount;
         else
             return "0x0000000000000000000000000000000000000000";
-    }
-
-    service.isMining = function(){
-        if (web3.currentProvider.isConnected())
-            return web3.eth.mining;
-        else
-            return false;
     }
 
     service.getAccounts = function(){
@@ -221,7 +310,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             posts_size : 0,
             boards_size : 0
         }
-        if (!web3.currentProvider.isConnected())
+        if (!web3.currentProvider.isConnected() || (!service.indexContract))
             return user;
         var contract = web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).getUserByAddress.call(address);
         if ((contract == "0x") || (contract == "0x0000000000000000000000000000000000000000"))
@@ -246,22 +335,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
 
     service.getIndexInfo = function(){
         return web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).getIndexInfo.call();
-    };
-
-    service.createUser = function(username) {
-        web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).createUser.sendTransaction(
-            username.toString(),
-            { from: session.account.address, gas : 1000000, to : localStorage.indexAddress },
-            function(err, tx) {
-                if (err)
-                    console.error(err);
-                service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
-                checkTxsWaiting();
-            }
-        );
     };
 
     service.addComment = function (post_address, text) {
@@ -575,6 +648,34 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     setInterval( function() {
         checkTxsWaiting();
     }, 3000 );
+
+    if (!localStorage.postGethID)
+        localStorage.postGethID = 1;
+    function postGeth(action ,params, callback){
+        localStorage.postGethID ++;
+        var parameters = "";
+        if (params.length == 1){
+            parameters = "\""+params[0]+"\"";
+        } else if (params.length > 1){
+            parameters = "\""+params[0]+"\"";
+            for (var i = 1; i < params.length; i++)
+                parameters += ",\""+params[i]+"\"";
+        }
+        console.log('making postGeth: '+'{"jsonrpc":"2.0","method":"'+action+'","params":['+parameters+'],"id":'+localStorage.postGethID+'}');
+        $http({
+            url: "http://localhost:8545",
+            method: 'POST',
+            headers: {"Content-type": "application/json"},
+            data: '{"jsonrpc":"2.0","method":"'+action+'","params":['+parameters+'],"id":'+localStorage.postGethID+'}'
+        }).then(function successCallback(response) {
+            if (response.data.error)
+                callback(response.data.error);
+            else
+                callback(null, response.data.result)
+        }, function errorCallback(response) {
+            callback(response.data);
+        });
+    }
 
     return service;
 }]);

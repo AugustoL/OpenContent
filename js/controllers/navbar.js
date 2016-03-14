@@ -5,7 +5,8 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
     $scope.balance = 0;
     $scope.selectedAddress = "0x0000000000000000000000000000000000000000";
     $scope.selectedAccount = 0;
-    $scope.isSync = false;
+
+    $scope.loading = true;
 
     $scope.txsWaiting = [];
     if (localStorage.txsWaiting && localStorage.txsWaiting.toString().length > 1){
@@ -15,13 +16,7 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
             $scope.txsWaiting.push(localStorage.txsWaiting);
     }
     $scope.openBoard = function(board, page){
-        $scope.loadingHome = true;
-        $scope.posts = [];
         $scope.loadView('home');
-        if (board == '0x0')
-            $scope.viewSelected = 'home';
-        else
-            $scope.viewSelected = board;
         $rootScope.$broadcast('boardChange', {
             "board" : board,
             "page" : page
@@ -33,15 +28,13 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
         $scope.indexInfo = data.indexInfo;
         $scope.accounts = web3Service.getAccounts();
         session.loadAccounts($scope.accounts);
-        if ($scope.accounts && $scope.accounts[0])
-            $scope.selectAccount(0);
-        $scope.getAccountInfo();
-        $scope.refreshBalance();
-        $scope.isSync = true;
+        if (($scope.account) && ($scope.account.address != "0x0000000000000000000000000000000000000000")){
+            $scope.getAccountInfo();
+            $scope.refreshBalance();
+        }
         $scope.$apply('accounts');
         $scope.$apply('indexInfo');
         $scope.$apply('account');
-        $scope.$apply('isSync');
         $scope.$apply('txsWaiting');
     });
 
@@ -50,33 +43,66 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
         $scope.refreshBalance();
     };
 
-    $scope.selectAccount = function(index){
-        console.log('Loading account index '+index);
-        localStorage.selectedAccount = index;
-        session.account.address = $scope.accounts[index];
-        $scope.selectedAccount = index;
-        $scope.selectedAddress = $scope.accounts[index];
-        $scope.getAccountInfo();
-        $scope.refreshBalance();
-    };
-
     $scope.getAccountInfo = function(){
-        var user = web3Service.getUserByAddress(session.account.address);
-        user.boards = [];
-        for (var i = 0; i < user.boards_size; i++) {
-            var board_address = web3Service.getUserBoard(user.contract, i);
-            var boardInfo = web3Service.getBoardInfo(board_address);
-            user.boards.push({
-                address : board_address,
-                owner : boardInfo[0],
-                name : $filter('hexToString')(boardInfo[1]),
-                posts : parseInt(boardInfo[2]),
-                users : parseInt(boardInfo[3])
+       var user = web3Service.getUserByAddress(session.account.address);
+       user.boards = [];
+       for (var i = 0; i < user.boards_size; i++) {
+           var board_address = web3Service.getUserBoard(user.contract, i);
+           var boardInfo = web3Service.getBoardInfo(board_address);
+           user.boards.push({
+               address : board_address,
+               owner : boardInfo[0],
+               name : $filter('hexToString')(boardInfo[1]),
+               posts : parseInt(boardInfo[2]),
+               users : parseInt(boardInfo[3])
+           });
+       }
+       $scope.account = user;
+       //$scope.$apply('account');
+       session.loadAccount(user);
+       $scope.loading = false;
+   }
+
+    $scope.newAddress = function() {
+        $("#passwordModal").modal('show');
+        $scope.modalSubmit = function(){
+            web3Service.newAddress($scope.passModal);
+            $("#passwordModal").modal('hide');
+        }
+    }
+
+    $scope.selectAccount = function(index){
+        $("#passwordModal").modal('show');
+        $scope.modalSubmit = function(){
+            if ($scope.autoUnlock){
+                localStorage.defaultAddress = $scope.accounts[index];
+                localStorage.defaultPassword = $scope.passModal;
+            }
+            $("#passwordModal").modal('hide');
+            $scope.loading = true;
+            console.log('Loading account index '+index);
+            web3Service.unloackAccount($scope.accounts[index],$scope.passModal,function(err,result){
+                if (err)
+                    console.error(err);
+                else {
+                    localStorage.selectedAccount = index;
+                    session.account.address = $scope.accounts[index];
+                    $scope.selectedAccount = index;
+                    $scope.selectedAddress = $scope.accounts[index];
+                    $scope.getAccountInfo();
+                    $scope.refreshBalance();
+                }
             });
         }
-        $scope.account = user;
-        session.loadAccount(user);
-    }
+    };
+
+    $scope.autoUnlock = false;
+    if (localStorage.autoUnlock == "true")
+        $scope.autoUnlock = true;
+    $scope.$watch('autoUnlock',function(newValue){
+        console.log(newValue);
+        localStorage.autoUnlock = newValue;
+    })
 
     $scope.refreshBalance = function(){
         var balance = parseInt(web3Service.getBalance(session.account.address));
@@ -88,11 +114,28 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
     $scope.indexInfo = web3Service.indexInfo;
     $scope.accounts = web3Service.getAccounts();
     session.loadAccounts($scope.accounts);
-    if ($scope.accounts && $scope.accounts[0])
-        $scope.selectAccount(0);
-    $scope.getAccountInfo();
-    $scope.refreshBalance();
-    $scope.isSync = true;
+    if ($scope.autoUnlock){
+        console.log('UNLOCK DEFAULT');
+        web3Service.unloackAccount(localStorage.defaultAddress,localStorage.defaultPassword,function(err,result){
+            $scope.loading = false;
+            if (err)
+                console.error(err);
+            else {
+                for (var i = 0; i < $scope.accounts.length; i++) {
+                    if ($scope.accounts[i] == localStorage.defaultAddress){
+                        localStorage.selectedAccount = i;
+                        $scope.selectedAccount = i;
+                    }
+                }
+                session.account.address = localStorage.defaultAddress;
+                $scope.selectedAddress = localStorage.defaultAddress;
+                $scope.getAccountInfo();
+                $scope.refreshBalance();
+            }
+        });
+    } else {
+        $scope.loading = false;
+    }
     $scope.openBoard('0x0',0);
 
     $scope.reload = function (){

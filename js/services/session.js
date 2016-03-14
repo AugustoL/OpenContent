@@ -22,7 +22,6 @@ angular.module( 'OCApp.services' ).factory('session', ['$rootScope', function($r
     service.loadAccounts = function(accounts){
         service.accounts = accounts;
         console.log(service.accounts.length+" Accounts loaded");
-        $rootScope.$broadcast('accountsLoaded', service.accounts);
     };
 
     service.loadAccount = function(user){
@@ -43,7 +42,6 @@ angular.module( 'OCApp.services' ).factory('session', ['$rootScope', function($r
         else
             service.account.registered = true;
         console.log("Account loaded: "+service.account.address);
-        $rootScope.$broadcast('accountChange', service.account);
     };
 
     return service;

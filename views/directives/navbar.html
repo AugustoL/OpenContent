@@ -1,26 +1,49 @@
 <nav class="app-nav">
     <div class="container">
-        <a class="app-nav-item" ng-show="isSync" ng-class="{ 'active' : viewSelected=='home' }" ng-click="openBoard('0x0',0)"><strong>Home</strong></a>
-        <a class="app-nav-item" ng-show="isSync" ng-repeat="t in account.boards" ng-class="{ 'active' : viewSelected==t.address }" ng-click="openBoard(t.address, 0)">{{t.name}}</a>
-        <a class="app-nav-item pull-right" ng-class="{'active' : viewSelected=='sync'}" ng-click="loadView('sync');viewSelected = 'sync';">Sync <span ng-show="isSync" class="fa fa-circle green"></span><span ng-show="!isSync" class="fa fa-circle-o black"></span></a>
+        <a class="app-nav-item" ng-show="isConnected" ng-class="{ 'active' : viewSelected=='home' }" ng-click="openBoard('0x0',0)"><strong>Home</strong></a>
+        <a class="app-nav-item" ng-show="isConnected" ng-repeat="t in account.boards" ng-class="{ 'active' : viewSelected==t.address }" ng-click="openBoard(t.address, 0)">{{t.name}}</a>
+        <a class="app-nav-item pull-right" ng-class="{'active' : viewSelected=='sync'}" ng-click="loadView('sync');viewSelected = 'sync';">Sync <span ng-show="status=='connected'" class="fa fa-circle green"></span><span ng-show="status=='disconnected'" class="fa fa-circle-o black"></span><span ng-show="status=='mining'" class="fa fa-cog fa-spin"></span></a>
         <a class="app-nav-item pull-right" ng-class="{'active' : viewSelected=='settings'}" ng-click="loadView('settings');viewSelected = 'settings';">Settings</a>
         <a class="app-nav-item pull-right" ng-click="reload()"><span class="fa fa-refresh"></span></a>
         <a class="app-nav-item pull-right" ng-model="txsWaiting" ng-show="txsWaiting.length > 0" data-toggle="tooltip" title="{{txsWaiting.length}} TXs waiting..">{{txsWaiting.length}} <span class="fa fa-clock-o"></span></a>
     </div>
 </nav>
 <div class="container">
-    <h4 class="account-navbar" ng-show="isSync">
+    <h4 class="account-navbar" ng-show="isConnected">
         Account -
         <div class="btn-group">
             <button class="btn btn-default btn-xs dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {{selectedAddress}} <span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
-                <li ng-repeat="acc in accounts" ng-click="selectAccount(acc)"><a>{{acc}}</a></li>
+                <li ng-repeat="acc in accounts" ng-click="selectAccount($index)"><a>{{acc}}</a></li>
                 <li role="separator" class="divider"></li>
-                <li><a>Create</a></li>
+                <li ng-click="newAddress()"><a>Create</a></li>
             </ul>
         </div>
         <strong class="pull-right" ng-click="refreshBalance()"><span ng-model="balance">{{balance}}</span> Coins</strong>
     </h4>
+</div>
+<div id="passwordModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Password for account</h4>
+      </div>
+      <div class="modal-body">
+          <div class="form-group">
+              <input type="text" class="form-control" ng-model="this.passModal" placeholder="Password">
+          </div>
+          <div class="checkbox">
+              <label>
+                  <input type="checkbox" ng-model="this.autoUnlock"> Auto Unlock
+              </label>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="modalSubmit()">Submit</button>
+      </div>
+    </div>
+  </div>
 </div>

@@ -1,4 +1,4 @@
-<div ng-controller="myBoardsCtrl" ng-if="isSync" class="box">
+<div ng-controller="myBoardsCtrl" ng-if="isConnected" class="box">
     <div ng-show="!viewForm">
         <h3 class="box-title">My Boards <button class="btn btn-sm btn-default pull-right" ng-click="viewForm = true"><span class="fa fa-plus"></span> Board</button></h3>
         <table class="table">
@@ -33,6 +33,6 @@
         </div>
     </div>
 </div>
-<div class="sync-message" ng-if="!isSync">
+<div class="sync-message" ng-if="!isConnected">
     <h2 class="text-center"> <a ng-click="loadView('sync')">Connect</a> to navigate </h2>
 </div>
