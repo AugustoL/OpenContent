@@ -12,6 +12,7 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
     $scope.syncForm = 'connect';
     $scope.isMining = false;
     $scope.peerToAdd = "";
+    $scope.mineThreads = 0;
 
     if ($scope.status == 'mining')
         $scope.isMining = true;
@@ -37,6 +38,9 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
     if (localStorage.mineAccount)
         $scope.mineAccount = parseInt(localStorage.mineAccount);
 
+    if (localStorage.mineThreads)
+        $scope.mineThreads = parseInt(localStorage.mineThreads);
+
     if (localStorage.autoMine == "true")
         $scope.autoMine = true;
 
@@ -46,9 +50,9 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
     web3Service.getNodeInfo(function(result){
         console.log(result);
         $scope.nodeInfo = result;
-    })
+    });
 
-    $scope.$watchGroup(["minePassword","mineAccount","autoMine","connectionHost","connectionPort","genesisPath","chainDir","verbosityLog","autoConnect"],function(newValues){
+    $scope.$watchGroup(["minePassword","mineAccount","autoMine","connectionHost","connectionPort","genesisPath","chainDir","verbosityLog","autoConnect","mineThreads"],function(newValues){
         localStorage.minePassword = newValues[0];
         localStorage.mineAccount = newValues[1];
         localStorage.autoMine = newValues[2];
@@ -58,11 +62,12 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
         localStorage.chainDir = newValues[6];
         localStorage.verbosityLog = newValues[7];
         localStorage.autoConnect = newValues[8];
+        localStorage.mineThreads = newValues[9];
     })
 
     $scope.startMining = function(){
         $scope.loading = true;
-        web3Service.startMining(session.accounts[$scope.mineAccount],function(err,result){
+        web3Service.startMining(session.accounts[$scope.mineAccount],$scope.mineThreads,function(err,result){
             $scope.loading = false;
             if (err)
                 console.error(err);

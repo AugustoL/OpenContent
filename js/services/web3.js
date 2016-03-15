@@ -6,7 +6,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     $rootScope.isConnected = false;
 
     service.startGeth = function() {
-        var child = require('child_process').spawn('geth', ["--networkid", "666","--genesis", localStorage.genesisPath, "--datadir", localStorage.chainDir, "--rpc", "--verbosity="+localStorage.verbosityLog, "--rpcaddr", localStorage.connectionHost, "--rpcport", localStorage.connectionPort, "--rpccorsdomain=http://localhost:80", "--rpcapi", "admin,eth,miner,net,personal,web3"]);
+        var child = require('child_process').spawn('geth', ["--networkid", "2695666","--genesis", localStorage.genesisPath, "--datadir", localStorage.chainDir, "--rpc", "--verbosity="+localStorage.verbosityLog, "--rpcaddr", localStorage.connectionHost, "--rpcport", localStorage.connectionPort, "--rpccorsdomain=http://localhost:80", "--rpcapi", "admin,eth,miner,net,personal,web3"]);
         child.stdout.on('data', function(data){
             console.log(`${data}`);
         });
@@ -23,15 +23,13 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         $rootScope.loading = true;
         console.log('Connected');
         setTimeout( function() {
-            web3.setProvider(new web3.providers.HttpProvider("http://localhost:8545"));
+            web3.setProvider(new web3.providers.HttpProvider("http://"+localStorage.connectionHost+":"+localStorage.connectionPort));
             if (web3.currentProvider.isConnected()){
                 loadContract();
                 $rootScope.loading = false;
             }
         }, 5000 );
     }
-    if (localStorage.autoConnect == "true")
-        service.startGeth();
 
     service.stopGeth = function() {
         require('child_process').exec('kill -9 '+localStorage.gethPid);
@@ -49,28 +47,29 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         web3 = new Web3();
     }
     $rootScope.status = "disconnected";
-    web3.setProvider(new web3.providers.HttpProvider("http://localhost:8545"));
+    web3.setProvider(new web3.providers.HttpProvider("http://"+localStorage.connectionHost+":"+localStorage.connectionPort));
     if (web3.currentProvider.isConnected()){
         loadContract();
+    } else if (localStorage.autoConnect == "true") {}
+        service.startGeth();
     }
 
     service.txsWaiting = [];
     if (localStorage.txsWaiting && localStorage.txsWaiting.toString().length > 1){
-        console.log(localStorage.txsWaiting);
         if (localStorage.txsWaiting.toString().indexOf(",") > 0)
             service.txsWaiting = localStorage.txsWaiting.toString().split(",");
         else
             service.txsWaiting.push(localStorage.txsWaiting);
     }
-    try{
-        console.log("Peers connected: "+web3.net.peerCount);
-    } catch (e){
-        console.error(e);
-    }
 
     service.unloackAccount = function(address,password,callback){
         postGeth('personal_unlockAccount',[address,password],function(err,result){
-            callback(err,result);
+            if (err)
+                callback(err)
+            else
+                postGeth('miner_setEtherbase',[address],function(err,result2){
+                    callback(err,result2);
+                })
         });
     };
 
@@ -111,24 +110,19 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         })
     }
 
-    service.startMining = function(address,callback){
-        postGeth('eth_mining','',function(err,result){
+    service.startMining = function(address,threads,callback){
+        console.log("Miner started on address: "+address+"+, using "+threads+" threads");
+        postGeth('eth_mining',[],function(err,r1){
             if (err)
                 callback(err);
             else
-                if (!result){
-                    postGeth('miner_start',1,function(err,result){
+                if (!r1){
+                    postGeth('miner_start',[parseInt(threads)],function(err,r2){
                         if (err)
                             callback(err);
                         else{
-                            postGeth('miner_setEtherbase',[address],function(err,result){
-                                if (err)
-                                    callback(err);
-                                else{
-                                    $rootScope.status = 'mining';
-                                    callback(null,result);
-                                }
-                            })
+                            $rootScope.status = 'mining';
+                            callback(null,r2);
                         }
                     })
                 }
@@ -136,12 +130,12 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     };
 
     service.stopMining = function(){
-        postGeth('eth_mining','',function(err,result){
+        postGeth('eth_mining',[],function(err,r1){
             if (err)
                 console.error(err);
             else
-                if (result){
-                    postGeth('miner_stop','',function(err,result){
+                if (r1){
+                    postGeth('miner_stop',[parseInt(localStorage.mineThreads)],function(err,r2){
                         if (err)
                             console.error(err);
                         else
@@ -157,7 +151,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 console.error(err);
             service.indexContract = JSON.parse(compiled);
             service.indexAddress = address;
-            console.log(service.indexAddress);
+            console.log("Index Contract address: "service.indexAddress);
             web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).log().watch(function(error, result){
                 console.log($filter('hexToString')(result.args.message));
             });
@@ -175,7 +169,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 posts : parseInt(indexInfo[3])
             };
             service.indexInfo = index_info;
-            console.log("Version "+index_info.version+","+index_info.users+" Users"+","+index_info.boards+" Boards"+","+index_info.posts+" Posts");
+            console.log("Index Info: Version "+index_info.version+" ; "+index_info.users+" Users"+" ; "+index_info.boards+" Boards"+" ; "+index_info.posts+" Posts");
             $rootScope.status = "connected";
             if (localStorage.autoMine == "true")
                 service.startMining();
@@ -230,8 +224,15 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     }
 
     service.getBalance = function(address){
-        if (web3.currentProvider.isConnected())
-            return web3.eth.getBalance(address).toString();
+        if (web3.currentProvider.isConnected()){
+            console.log(web3.eth.coinbase);
+            console.log(web3.eth.mining);
+            console.log(web3.net.peerCount);
+            for (var i = 0; i < web3.eth.accounts.length; i++) {
+                console.log((web3.eth.getBalance(address)*0.000000000000000001).toString());
+            }
+            return (web3.eth.getBalance(address)*0.000000000000000001).toString();
+        }
         else
             return "0";
     }
@@ -409,7 +410,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     };
 
     service.createPost = function (board_address, title, image, bytesArray) {
-        console.log(board_address);
         web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).createPost.sendTransaction(
             session.account.contract.toString(),
             board_address.toString(),
@@ -427,7 +427,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             function(err, tx) {
                 if (err)
                     console.error(err);
-                console.log('new post sent');
+                console.log('New post sent');
                 service.txsWaiting.push(tx);
                 localStorage.txsWaiting = service.txsWaiting[0];
                 for (var i = 1; i < service.txsWaiting.length; i++)
