@@ -50,7 +50,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     web3.setProvider(new web3.providers.HttpProvider("http://"+localStorage.connectionHost+":"+localStorage.connectionPort));
     if (web3.currentProvider.isConnected()){
         loadContract();
-    } else if (localStorage.autoConnect == "true") {}
+    } else if (localStorage.autoConnect == "true") {
         service.startGeth();
     }
 
@@ -151,7 +151,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 console.error(err);
             service.indexContract = JSON.parse(compiled);
             service.indexAddress = address;
-            console.log("Index Contract address: "service.indexAddress);
+            console.log("Index Contract address: "+service.indexAddress);
             web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).log().watch(function(error, result){
                 console.log($filter('hexToString')(result.args.message));
             });
@@ -169,7 +169,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 posts : parseInt(indexInfo[3])
             };
             service.indexInfo = index_info;
-            console.log("Index Info: Version "+index_info.version+" ; "+index_info.users+" Users"+" ; "+index_info.boards+" Boards"+" ; "+index_info.posts+" Posts");
+            console.log("Index Info: Version "+index_info.version+" ; "+index_info.users+" Users ; "+index_info.boards+" Boards ; "+index_info.posts+" Posts");
             $rootScope.status = "connected";
             if (localStorage.autoMine == "true")
                 service.startMining();

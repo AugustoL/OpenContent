@@ -100,7 +100,6 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
     if (localStorage.autoUnlock == "true")
         $scope.autoUnlock = true;
     $scope.$watch('autoUnlock',function(newValue){
-        console.log(newValue);
         localStorage.autoUnlock = newValue;
     })
 
