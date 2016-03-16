@@ -1,8 +1,8 @@
 =============== Mar 16, 2016 (ART) ===============
-08:55:57.832167 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-08:55:57.832323 db@open opening
-08:55:57.832361 journal@recovery F·1
-08:55:57.832468 journal@recovery recovering @1
-08:55:57.874764 mem@flush created L0@2 N·10 S·526B "Blo..ion,v8":"\xc5\xd2F..\x85\xa4p,v9"
-08:55:57.876184 db@janitor F·3 G·0
-08:55:57.876211 db@open done T·43.874657ms
+10:37:55.306554 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+10:37:55.306653 db@open opening
+10:37:55.306708 journal@recovery F·1
+10:37:55.306880 journal@recovery recovering @1
+10:37:55.349683 mem@flush created L0@2 N·12 S·541B "Blo..ion,v8":"\xc5\xd2F..\x85\xa4p,v9"
+10:37:55.350267 db@janitor F·3 G·0
+10:37:55.350291 db@open done T·43.625688ms

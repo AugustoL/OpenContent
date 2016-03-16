@@ -36,7 +36,6 @@ angular.module('OCApp.controllers').controller('homeCtrl',['$scope', 'web3Servic
                 if (i < parseInt(boardInfo[2]))
                     $scope.posts.push(web3Service.getBoardPost($scope.boardAddress ,i));
         }
-        console.log($scope.posts);
     }
 
     $scope.loadPosts();

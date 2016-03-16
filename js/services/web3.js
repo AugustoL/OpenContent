@@ -6,7 +6,23 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     $rootScope.isConnected = false;
 
     service.startGeth = function() {
-        var child = require('child_process').spawn('geth', ["--networkid", "2695666","--genesis", localStorage.genesisPath, "--datadir", localStorage.chainDir, "--rpc", "--verbosity="+localStorage.verbosityLog, "--rpcaddr", localStorage.connectionHost, "--rpcport", localStorage.connectionPort, "--rpccorsdomain=http://localhost:80", "--rpcapi", "admin,eth,miner,net,personal,web3", "--nat", "any"]);
+        console.log('Starting geth');
+        var child = require('child_process').spawn('geth', [
+        "--networkid", "1998165215114019841",
+        "--genesis", localStorage.genesisPath,
+        "--datadir", localStorage.chainDir,
+        "--rpc",
+        "--verbosity="+localStorage.verbosityLog,
+        "--rpcaddr", localStorage.connectionHost,
+        "--rpcport", localStorage.connectionPort,
+        "--rpccorsdomain=http://localhost:80",
+        "--rpcapi", "admin,eth,miner,net,personal,web3",
+        "--nat", "any",
+        "--blockchainversion", "3",
+        "--autodag",
+        "--ipcdisable",
+        "--extradata", "OpenContent 0.1"
+        ]);
         child.stdout.on('data', function(data){
             console.log(`${data}`);
         });
@@ -30,9 +46,13 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             }
         }, 5000 );
     }
-
     service.stopGeth = function() {
-        require('child_process').exec('kill -9 '+localStorage.gethPid);
+        console.log('Stopping geth');
+        if (window.navigator.platform.indexOf('Windows') > -1){
+            require('child_process').exec('Taskkill /PID '+localStorage.gethPid);
+        } else {
+            require('child_process').exec('kill -9 '+localStorage.gethPid);
+        }
         console.log('Disconnected');
         $rootScope.status = "disconnected";
         window.location.reload();

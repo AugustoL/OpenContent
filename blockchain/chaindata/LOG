@@ -1,8 +1,13 @@
 =============== Mar 16, 2016 (ART) ===============
-08:57:46.002880 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-08:57:46.003046 db@open opening
-08:57:46.003126 journal@recovery F·1
-08:57:46.003278 journal@recovery recovering @3
-08:57:46.342849 mem@flush created L0@5 N·912 S·96KiB "\x02#v..i\xea\xc2,v219":"\xfe^\xa5..\u007f\xf3s,v885"
-08:57:46.343721 db@janitor F·4 G·0
-08:57:46.343744 db@open done T·340.685513ms
+10:56:45.467012 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+10:56:45.467173 db@open opening
+10:56:45.467243 journal@recovery F·1
+10:56:45.467364 journal@recovery recovering @3
+10:56:45.546382 mem@flush created L0@5 N·7346 S·285KiB "\x00?\x9a..\x1a\xcfB,v2599":"\xff\xb64..\x01\xea\x13,v7300"
+10:56:45.553748 db@janitor F·4 G·0
+10:56:45.553775 db@open done T·86.587126ms
+10:56:50.420440 table@compaction L0·2 -> L1·0 S·286KiB Q·7361
+10:56:50.523260 table@build created L1@8 N·2288 S·166KiB "\x00?\x9a..\x1a\xcfB,v2599":"\xff\xb64..\x01\xea\x13,v7300"
+10:56:50.614314 table@compaction committed F-1 S-119KiB Ke·0 D·5070 T·193.809851ms
+10:56:50.614418 table@remove removed @5
+10:56:50.614489 table@remove removed @2

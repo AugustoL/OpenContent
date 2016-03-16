@@ -58,7 +58,6 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
            });
        }
        $scope.account = user;
-       //$scope.$apply('account');
        session.loadAccount(user);
        $scope.loading = false;
    }
@@ -114,7 +113,6 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
     $scope.accounts = web3Service.getAccounts();
     session.loadAccounts($scope.accounts);
     if ($scope.autoUnlock){
-        console.log('UNLOCK DEFAULT');
         web3Service.unloackAccount(localStorage.defaultAddress,localStorage.defaultPassword,function(err,result){
             $scope.loading = false;
             if (err)
