@@ -6,7 +6,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     $rootScope.isConnected = false;
 
     service.startGeth = function() {
-        var child = require('child_process').spawn('geth', ["--networkid", "2695666","--genesis", localStorage.genesisPath, "--datadir", localStorage.chainDir, "--rpc", "--verbosity="+localStorage.verbosityLog, "--rpcaddr", localStorage.connectionHost, "--rpcport", localStorage.connectionPort, "--rpccorsdomain=http://localhost:80", "--rpcapi", "admin,eth,miner,net,personal,web3"]);
+        var child = require('child_process').spawn('geth', ["--networkid", "2695666","--genesis", localStorage.genesisPath, "--datadir", localStorage.chainDir, "--rpc", "--verbosity="+localStorage.verbosityLog, "--rpcaddr", localStorage.connectionHost, "--rpcport", localStorage.connectionPort, "--rpccorsdomain=http://localhost:80", "--rpcapi", "admin,eth,miner,net,personal,web3", "--nat", "any"]);
         child.stdout.on('data', function(data){
             console.log(`${data}`);
         });

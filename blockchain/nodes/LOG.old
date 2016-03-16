@@ -1,0 +1,8 @@
+=============== Mar 16, 2016 (ART) ===============
+08:55:59.744308 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+08:55:59.744432 db@open opening
+08:55:59.744476 journal@recovery F·1
+08:55:59.744566 journal@recovery recovering @1
+08:55:59.829431 mem@flush created L0@2 N·4016 S·120KiB "n:\x00..ver,v226":"version,v1"
+08:55:59.868105 db@janitor F·3 G·0
+08:55:59.868125 db@open done T·123.685565ms
