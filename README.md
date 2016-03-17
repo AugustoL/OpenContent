@@ -1,15 +1,20 @@
 # OpenContent Client
 
-Source code of the desktop client of OpenContent, to connect, mine and use the OpenContent blockchain
+Source code of the desktop client of OpenContent, to connect, mine and use the OpenContent blockchain.
 
-## Install Geth and Eth
+## Steps to use
 
-To use the client you need to have Geth and Eth installed.
-
-View install instructions here: https://www.ethereum.org/cli
+1. Download the source code form this repository.
+2. Build the app running npm build, or node build -platforms 'linux64,win64,osx64' or the os you want.
+3. Create an account, connect to the network using 127.0.0.1 ad hostname, 8545 as port and fill the paths to the blockchain folder and genesis.json file.
+4. Start mining and collect coins.
+5. Now you can publish content, send coins to other users, etc.
 
 ## TO DO
 
+- [ ] Connection between nodes IMPORTANT, MAX PRIORITY.
+- [ ] Choose default unit for balances on settings.
+- [ ] Rewards button on post and users profile.
 - [ ] Write tests.
 - [ ] Add popularity contract.
 - [ ] Add help and FAQ.

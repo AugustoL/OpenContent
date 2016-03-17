@@ -1,8 +1,13 @@
-=============== Mar 16, 2016 (ART) ===============
-10:37:55.306554 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-10:37:55.306653 db@open opening
-10:37:55.306708 journal@recovery F·1
-10:37:55.306880 journal@recovery recovering @1
-10:37:55.349683 mem@flush created L0@2 N·12 S·541B "Blo..ion,v8":"\xc5\xd2F..\x85\xa4p,v9"
-10:37:55.350267 db@janitor F·3 G·0
-10:37:55.350291 db@open done T·43.625688ms
+=============== Mar 17, 2016 (ART) ===============
+11:15:04.118312 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+11:15:04.118426 db@open opening
+11:15:04.118480 journal@recovery F·1
+11:15:04.125175 journal@recovery recovering @17
+11:15:04.164829 mem@flush created L0@20 N·53 S·2KiB "\x05-\x97..\xecmK,v26302":"\xc5\xd2F..\x85\xa4p,v26264"
+11:15:04.166167 db@janitor F·4 G·0
+11:15:04.166185 db@open done T·47.748974ms
+11:15:09.033886 table@compaction L0·1 -> L1·1 S·540KiB Q·26317
+11:15:09.106930 table@build created L1@23 N·7680 S·539KiB "\x00?\x9a..\x1a\xcfB,v9999":"\xff\xb64..\x01\xea\x13,v7300"
+11:15:09.162702 table@compaction committed F-1 S-609B Ke·0 D·37 T·128.754053ms
+11:15:09.162780 table@remove removed @20
+11:15:09.162900 table@remove removed @19

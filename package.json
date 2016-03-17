@@ -1,7 +1,7 @@
 {
     "name": "OpenContent",
-    "description": "Open Content platform app.",
-    "version": "0.1.1",
+    "description": "Open Content platform desktop app.",
+    "version": "0.1.2",
     "main": "app://opencontent/index.html",
     "author": {
         "name" : "Augusto Lemble",

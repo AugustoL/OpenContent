@@ -26,15 +26,13 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
     $rootScope.$on('appUpdate', function(event, data) {
         $scope.txsWaiting = data.txsWaiting;
         $scope.indexInfo = data.indexInfo;
-        $scope.accounts = web3Service.getAccounts();
-        session.loadAccounts($scope.accounts);
         if (($scope.account) && ($scope.account.address != "0x0000000000000000000000000000000000000000")){
             $scope.getAccountInfo();
             $scope.refreshBalance();
+            $scope.$apply('account');
         }
         $scope.$apply('accounts');
         $scope.$apply('indexInfo');
-        $scope.$apply('account');
         $scope.$apply('txsWaiting');
     });
 
@@ -81,9 +79,10 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
             $scope.loading = true;
             console.log('Loading account index '+index);
             web3Service.unloackAccount($scope.accounts[index],$scope.passModal,function(err,result){
-                if (err)
-                    console.error(err);
-                else {
+                if (err){
+                    $("#alerts").append("<div class=\"alert alert-danger alert-dismissible\" role=\"alert\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>"+err.message.toString()+"</div>")
+                    $scope.loading = false;
+                }else {
                     localStorage.selectedAccount = index;
                     session.account.address = $scope.accounts[index];
                     $scope.selectedAccount = index;

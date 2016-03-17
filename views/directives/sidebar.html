@@ -2,6 +2,7 @@
     <div ng-show="account.username.length > 0" class="sidebar-module sidebar-module-inset">
         <h3>Manage</h3>
         <ol class="list-unstyled">
+            <li><a ng-click="loadView('send')">Send Coins</a></li>
             <li><a ng-click="loadView('myAccount')">My Account</a></li>
             <li><a ng-click="loadView('myPosts')">My Posts ({{account.posts_size}})</a></li>
             <li><a ng-click="loadView('myBoards')">My Boards ({{account.boards_size}})</a></li>
@@ -9,6 +10,9 @@
         </ol>
     </div>
     <div ng-show="account.username.length == 0" class="sidebar-module sidebar-module-inset">
-        <a ng-click="loadView('register')">Create Account</a>
+        <ol class="list-unstyled">
+            <li><a ng-click="loadView('send')">Send Coins</a></li>
+            <li><a ng-click="loadView('register')">Create Account</a></li>
+        </ol>
     </div>
 </div>

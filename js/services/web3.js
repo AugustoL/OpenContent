@@ -7,7 +7,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
 
     service.startGeth = function() {
         console.log('Starting geth');
-        var child = require('child_process').spawn('geth', [
+        var gethPath = "geth/geth";
+        if (window.navigator.platform.indexOf('Windows') > -1)
+            gethPath = "geth/geth.exe";
+        var child = require('child_process').spawn(gethPath, [
         "--networkid", "1998165215114019841",
         "--genesis", localStorage.genesisPath,
         "--datadir", localStorage.chainDir,
@@ -55,7 +58,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         }
         console.log('Disconnected');
         $rootScope.status = "disconnected";
-        window.location.reload();
     }
 
     // Web3
@@ -74,6 +76,37 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         service.startGeth();
     }
 
+    web3.eth.isSyncing(function(error, sync){
+        if (err)
+            console.error(err);
+        if(!error) {
+            if(sync === true) {
+                console.log("Reset sync");
+               web3.reset(true);
+            } else if(sync) {
+                console.log("Sync info:");
+                console.log(sync);
+            } else {
+                console.log('Restarting geth');
+                if (window.navigator.platform.indexOf('Windows') > -1){
+                    require('child_process').exec('Taskkill /PID '+localStorage.gethPid, function(err){
+                        if (!err)
+                            service.startGeth();
+                        else
+                            console.error(err);
+                    });
+                } else {
+                    require('child_process').exec('kill -9 '+localStorage.gethPid, function(err){
+                        if (!err)
+                            service.startGeth();
+                        else
+                            console.error(err);
+                    });
+                }
+            }
+        }
+    });
+
     service.txsWaiting = [];
     if (localStorage.txsWaiting && localStorage.txsWaiting.toString().length > 1){
         if (localStorage.txsWaiting.toString().indexOf(",") > 0)
@@ -87,9 +120,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             if (err)
                 callback(err)
             else
-                postGeth('miner_setEtherbase',[address],function(err,result2){
-                    callback(err,result2);
-                })
+                callback(null,result);
         });
     };
 
@@ -111,9 +142,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 if (err)
                     console.error(err);
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -132,20 +160,26 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
 
     service.startMining = function(address,threads,callback){
         console.log("Miner started on address: "+address+"+, using "+threads+" threads");
+        localStorage.mineThreads = threads;
         postGeth('eth_mining',[],function(err,r1){
             if (err)
                 callback(err);
-            else
-                if (!r1){
-                    postGeth('miner_start',[parseInt(threads)],function(err,r2){
+            else if (!r1){
+                postGeth('miner_setEtherbase',[address],function(err,r2){
+                    if (err)
+                        callback(err);
+                    postGeth('miner_start',[parseInt(threads)],function(err,r3){
                         if (err)
                             callback(err);
                         else{
                             $rootScope.status = 'mining';
-                            callback(null,r2);
+                            callback(null,r3);
                         }
                     })
-                }
+                })
+            } else {
+                callback("Already mining..");
+            }
         })
     };
 
@@ -153,15 +187,16 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         postGeth('eth_mining',[],function(err,r1){
             if (err)
                 console.error(err);
-            else
-                if (r1){
-                    postGeth('miner_stop',[parseInt(localStorage.mineThreads)],function(err,r2){
-                        if (err)
-                            console.error(err);
-                        else
-                            $rootScope.status = 'connected';
-                    })
-                }
+            else if (r1){
+                postGeth('miner_stop',[parseInt(localStorage.mineThreads)],function(err,r2){
+                    if (err)
+                        console.error(err);
+                    else
+                        $rootScope.status = 'connected';
+                })
+            } else {
+                console.log("No mining..");
+            }
         })
     }
 
@@ -245,12 +280,14 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
 
     service.getBalance = function(address){
         if (web3.currentProvider.isConnected()){
-            console.log(web3.eth.coinbase);
-            console.log(web3.eth.mining);
-            console.log(web3.net.peerCount);
-            for (var i = 0; i < web3.eth.accounts.length; i++) {
-                console.log((web3.eth.getBalance(address)*0.000000000000000001).toString());
-            }
+            console.log("#--------------------- DEBUG INFO ---------------------#");
+            console.log("Coinbase: "+web3.eth.coinbase);
+            console.log("Mining: "+web3.eth.mining);
+            console.log("Hasrate: "+web3.eth.hashrate);
+            console.log("Peers: "+web3.net.peerCount);
+            console.log("index code:");
+            console.log(web3.eth.getCode(localStorage.indexAddress).toString().substring(0,200));
+            console.log("#--------------------- ########## ---------------------#");
             return (web3.eth.getBalance(address)*0.000000000000000001).toString();
         }
         else
@@ -369,9 +406,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 if (err)
                     console.error(err);
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -391,9 +425,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 if (err)
                     console.error(err);
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -405,9 +436,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 if (err)
                     console.error(err);
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -421,9 +449,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 if (err)
                     console.error(err);
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -449,9 +474,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                     console.error(err);
                 console.log('New post sent');
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -466,9 +488,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                     console.error(err);
                 console.log('Give up sent');
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -483,9 +502,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                     console.error(err);
                 console.log('Give up sent');
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -500,9 +516,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                     console.error(err);
                 console.log('Removing Board');
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -517,9 +530,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                     console.error(err);
                 console.log('Deleting Board');
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -534,9 +544,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                     console.error(err);
                 console.log('Removing Post');
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
                 checkTxsWaiting();
             }
         );
@@ -550,9 +557,19 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                     console.error(err);
                 console.log('Deleting my user');
                 service.txsWaiting.push(tx);
-                localStorage.txsWaiting = service.txsWaiting[0];
-                for (var i = 1; i < service.txsWaiting.length; i++)
-                    localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
+                checkTxsWaiting();
+            }
+        );
+    };
+
+    service.sendCoins = function(toAddress, amount) {
+        web3.eth.sendTransaction({ from: session.account.address, gas : 1000000, to : toAddress ,value : web3.toWei(amount, "ether")},
+            function(err, tx) {
+                if (err)
+                    console.error(err);
+                console.log(amount+' sent to '+toAddress);
+                console.log(tx);
+                service.txsWaiting.push(tx);
                 checkTxsWaiting();
             }
         );
@@ -568,11 +585,16 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     }
     var txsWatingLength = +service.txsWaiting.length;
     function checkTxsWaiting(){
+
+        localStorage.txsWaiting = service.txsWaiting[0];
+        for (var i = 1; i < service.txsWaiting.length; i++)
+            localStorage.txsWaiting =+ ","+service.txsWaiting[0].toString();
+
         if ((txsWatingLength > 0) || (service.txsWaiting.length > 0 )){
             console.log("Checking "+service.txsWaiting.length+" txs..");
             if (txsWatingLength != service.txsWaiting.length)
                 $rootScope.$broadcast('appUpdate', service);
-            txsWatingLength = +service.txsWaiting.length;
+            txsWatingLength = service.txsWaiting.length;
             if (service.txsWaiting)
                 for (var i = 0; i < service.txsWaiting.length; i++)
                     if (isTXMined(service.txsWaiting[i])){
@@ -587,7 +609,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                     }
             if (txsWatingLength != service.txsWaiting.length)
                 $rootScope.$broadcast('appUpdate', service);
-            txsWatingLength = +service.txsWaiting.length;
+            txsWatingLength = service.txsWaiting.length;
         }
     }
 
