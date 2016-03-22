@@ -1,5 +1,8 @@
 <div class="box" ng-class="{'sync-message' : !isConnected}" ng-controller="settingsCtrl">
-    <h3 class="box-title">Settings <button class="btn btn-sm btn-default pull-right" ng-click="devTools()"><span class="fa fa-hashtag"></span> Debug</button></h3>
+    <h3 class="box-title">Settings
+        <button class="btn btn-sm btn-default pull-right button-margin-sides" ng-click="clearStorage()"><span class="fa fa-eraser"></span> Clear Storage</button>
+        <button class="btn btn-sm btn-default pull-right button-margin-sides" ng-click="devTools()"><span class="fa fa-terminal"></span> Debug</button>
+    </h3>
     <div class="row text-center">
         <button ng-click="saveSettings()" class="btn btn-default">Save</button>
     </div>

@@ -1,13 +1,15 @@
 <div class="box" ng-class="{'sync-message' : !isConnected}" ng-controller="syncCtrl">
     <div ng-show="syncForm == 'connect'">
         <h3 class="box-title">Connect
-            <button class="btn btn-sm btn-default pull-right" ng-click="syncForm = 'mine'"><span class="fa fa-hand-grab-o"></span> Mine</button>
-            <button class="btn btn-sm btn-default pull-right" ng-click="syncForm = 'peers'"><span class="fa fa-users"></span> Peers</button>
+            <button class="btn btn-sm btn-default pull-right button-margin-sides" ng-click="syncForm = 'mine'"><span class="fa fa-hand-grab-o"></span> Mine</button>
+            <button class="btn btn-sm btn-default pull-right button-margin-sides" ng-click="syncForm = 'peers'"><span class="fa fa-users"></span> Peers</button>
         </h3>
-        <div class="form-inline">
-            <div class="form-group">
-                Verbose:
-                <div class="btn-group">
+        <div class="form-group">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <span class="btn btn-primary btn-input-left">
+                        Verbosity
+                    </span>
                     <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     {{this.verbosityLog}} <span class="caret"></span>
                     </button>
@@ -19,29 +21,51 @@
                         <li ng-click="this.verbosityLog = 4"><a>4</a></li>
                         <li ng-click="this.verbosityLog = 5"><a>5</a></li>
                     </ul>
-                </div>
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" ng-model="this.autoConnect"> Connect on start
-                    </label>
-                </div>
+                    <span class="btn btn-default btn-input-right" ng-class="{'btn-primary' : this.autoConnect, 'btn-default' : !this.autoConnect}" ng-click="this.autoConnect = !this.autoConnect">
+                        Connect on start
+                    </span>
+                </span>
             </div>
         </div>
         <div class="form-group">
-            Genesis file:
-            <input type="text" class="form-control" id="genesisPath" ng-model="this.genesisPath" placeholder="Path to your genesis file">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <span class="btn btn-primary btn-file">
+                        Genesis file <input type="file" id="selectGenesis">
+                    </span>
+                </span>
+                <input class="form-control" readonly="" type="text" ng-model="this.genesisPath">
+            </div>
         </div>
         <div class="form-group">
-            Chain directory:
-            <input type="text" class="form-control" id="chainDir" ng-model="this.chainDir" placeholder="Directory of your blockchain">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <span class="btn btn-primary btn-file">
+                        Blockchain directory <input type="file" id="selectChain" webkitdirectory directory>
+                    </span>
+                </span>
+                <input class="form-control" readonly="" type="text" ng-model="this.chainDir">
+            </div>
         </div>
         <div class="form-group">
-            Url:
-            <input type="text" class="form-control" id="connectionHost" ng-model="this.connectionHost" placeholder="Host to your provider">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <span class="btn btn-primary">
+                        Host URL
+                    </span>
+                </span>
+                <input class="form-control" type="text" ng-model="this.connectionHost" placeholder="Host to your provider">
+            </div>
         </div>
         <div class="form-group">
-            Port:
-            <input type="text" class="form-control" id="connectionPort" ng-model="this.connectionPort" placeholder="Port of your provider">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <span class="btn btn-primary">
+                        Host PORT
+                    </span>
+                </span>
+                <input class="form-control" type="text" ng-model="this.connectionPort" placeholder="Port of your provider">
+            </div>
         </div>
         <div class="row text-center">
             <button ng-show="status=='disconnected'" ng-click="connect()" class="btn btn-default">Connect</button>
@@ -50,27 +74,45 @@
     </div>
     <div ng-show="syncForm == 'mine'">
         <h3 class="box-title">Mine
-            <button class="btn btn-sm btn-default pull-right" ng-click="syncForm = 'connect'"><span class="fa fa-plug"></span> Connect</button>
-            <button class="btn btn-sm btn-default pull-right" ng-click="syncForm = 'peers'"><span class="fa fa-users"></span> Peers</button>
+            <button class="btn btn-sm btn-default pull-right button-margin-sides" ng-click="syncForm = 'connect'"><span class="fa fa-plug"></span> Connect</button>
+            <button class="btn btn-sm btn-default pull-right button-margin-sides" ng-click="syncForm = 'peers'"><span class="fa fa-users"></span> Peers</button>
         </h3>
-        <div class="form-inline">
-            <div class="form-group">
-                Mine Account:
-                <input type="number" min="0" class="form-control number-input" id="mineAccount" ng-model="this.mineAccount">
-            </div>
-            <div class="form-group">
-                Threads:
-                <input type="number" min="1" max="4" class="form-control number-input" id="mineThreads" ng-model="this.mineThreads">
-            </div>
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" ng-model="this.autoMine"> Auto Mine
-                </label>
+        <div class="form-group">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <span class="btn btn-primary btn-input-left">
+                        Mine Account
+                    </span>
+                    <button class="btn btn-default dropdown-toggle btn-input-right" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-model="this.mineAccount">
+                    {{this.mineAccount}} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li ng-repeat="a in accounts" ng-click="selectMineAccount(a)"><a>{{a}}</a></li>
+                    </ul>
+                </span>
             </div>
         </div>
         <div class="form-group">
-            Password:
-            <input type="text" class="form-control" id="minePassword" ng-model="this.minePassword" placeholder="Account passowrd">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <span class="btn btn-primary btn-input-left">
+                        Threads
+                    </span>
+                    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{this.mineThreads}} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li ng-click="this.mineThreads = 1"><a>1</a></li>
+                        <li ng-click="this.mineThreads = 2"><a>2</a></li>
+                        <li ng-click="this.mineThreads = 3"><a>3</a></li>
+                        <li ng-click="this.mineThreads = 4"><a>4</a></li>
+                        <li ng-click="this.mineThreads = 5"><a>5</a></li>
+                    </ul>
+                    <span class="btn btn-input-right" ng-class="{'btn-primary' : this.autoMine, 'btn-default' : !this.autoMine}" ng-click="this.autoMine = !this.autoMine">
+                        Auto Mine
+                    </span>
+                </span>
+            </div>
         </div>
         <div class="row text-center">
             <button ng-show="!isMining" ng-click="startMining()" class="btn btn-default">Start Mining</button>
@@ -79,16 +121,22 @@
     </div>
     <div ng-show="syncForm == 'peers'">
         <h3 class="box-title">Peers
-            <button class="btn btn-sm btn-default pull-right" ng-click="syncForm = 'connect'"><span class="fa fa-plug"></span> Connect</button>
-            <button class="btn btn-sm btn-default pull-right" ng-click="syncForm = 'mine'"><span class="fa fa-hand-grab-o"></span> Mine</button>
+            <button class="btn btn-sm btn-default pull-right button-margin-sides" ng-click="syncForm = 'connect'"><span class="fa fa-plug"></span> Connect</button>
+            <button class="btn btn-sm btn-default pull-right button-margin-sides" ng-click="syncForm = 'mine'"><span class="fa fa-hand-grab-o"></span> Mine</button>
         </h3>
         Your node URL: {{nodeInfo.ip}}:{{nodeInfo.ports.listener}}<br>
         Your peer ID:<br>
         <pre class="peerID">{{nodeInfo.enode}}</pre>
         <div ng-show="isMining">
-            <h3>Add peer:</h3>
             <div class="form-group">
-                <input type="text" class="form-control" id="peerToAdd" ng-model="this.peerToAdd" placeholder="Peer ID">
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <span class="btn btn-primary">
+                            New peer ID
+                        </span>
+                    </span>
+                    <input class="form-control" type="text" ng-model="this.peerToAdd" placeholder="Peer ID">
+                </div>
             </div>
             <div class="row text-center">
                 <button  ng-click="addPeer()" class="btn btn-default">Add</button>

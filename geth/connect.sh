@@ -1,0 +1,1 @@
+./geth --networkid "1998165215114019841" --genesis ../genesis.json  --datadir ../blockchain --rpc --rpcaddr="0.0.0.0" --verbosity=2 --maxpeers=0 --blockchainversion "3" --rpccorsdomain="http://localhost:3000" console

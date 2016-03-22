@@ -54,7 +54,9 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         if (window.navigator.platform.indexOf('Windows') > -1){
             require('child_process').exec('Taskkill /PID '+localStorage.gethPid);
         } else {
-            require('child_process').exec('kill -9 '+localStorage.gethPid);
+            var pidof = require('child_process').execSync('pidof geth');
+            console.log(pidof.toString());
+            require('child_process').exec('kill -9 '+pidof.toString());
         }
         console.log('Disconnected');
         $rootScope.status = "disconnected";
@@ -124,12 +126,12 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         });
     };
 
-    service.newAddress = function(password){
+    service.newAddress = function(password, callback){
         postGeth('personal_newAccount',[password],function(err,address){
             if (err)
-                console.error(err);
+                callback(err);
             else
-                console.log(address+" created.");
+                callback(null);
         })
     }
 
@@ -226,15 +228,21 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             service.indexInfo = index_info;
             console.log("Index Info: Version "+index_info.version+" ; "+index_info.users+" Users ; "+index_info.boards+" Boards ; "+index_info.posts+" Posts");
             $rootScope.status = "connected";
-            if (localStorage.autoMine == "true")
-                service.startMining();
-            service.isMining(function(result) {
-                if (result)
-                    $rootScope.status = "mining";
-            })
-            $rootScope.isConnected = true;
-            $rootScope.loading = false;
-            $rootScope.$broadcast('appUpdate', service);
+            if (localStorage.autoMine == "true"){
+                service.startMining(localStorage.mineAccount,localStorage.mineThreads,function(err,mining){
+                    service.isMining(function(result) {
+                        if (result)
+                            $rootScope.status = "mining";
+                        $rootScope.isConnected = true;
+                        $rootScope.loading = false;
+                        $rootScope.$broadcast('appUpdate', service);
+                    })
+                });
+            } else {
+                $rootScope.isConnected = true;
+                $rootScope.loading = false;
+                $rootScope.$broadcast('appUpdate', service);
+            }
         });
     }
 
@@ -279,19 +287,27 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     }
 
     service.getBalance = function(address){
+        if (web3.currentProvider.isConnected())
+            return (web3.eth.getBalance(address)*0.000000000000000001).toString();
+        else
+            return "0";
+    }
+
+    service.superDebug = function(){
         if (web3.currentProvider.isConnected()){
             console.log("#--------------------- DEBUG INFO ---------------------#");
+            console.log("Version: ",web3.version);
             console.log("Coinbase: "+web3.eth.coinbase);
+            console.log("Block: #"+web3.eth.blockNumber+", "+web3.eth.defaultBlock);
             console.log("Mining: "+web3.eth.mining);
             console.log("Hasrate: "+web3.eth.hashrate);
             console.log("Peers: "+web3.net.peerCount);
-            console.log("index code:");
+            console.log("Index code:");
             console.log(web3.eth.getCode(localStorage.indexAddress).toString().substring(0,200));
             console.log("#--------------------- ########## ---------------------#");
-            return (web3.eth.getBalance(address)*0.000000000000000001).toString();
+        } else {
+            console.log("Not conencted to debug..")
         }
-        else
-            return "0";
     }
 
     service.getUserByUsername = function (username) {
@@ -691,9 +707,9 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         checkTxsWaiting();
     }, 3000 );
 
-    if (!localStorage.postGethID)
-        localStorage.postGethID = 1;
     function postGeth(action ,params, callback){
+        if (!localStorage.postGethID || (localStorage.postGethID == "NaN"))
+            localStorage.postGethID = 0;
         localStorage.postGethID ++;
         var parameters = "";
         if (params.length == 1){

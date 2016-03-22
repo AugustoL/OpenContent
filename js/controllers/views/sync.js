@@ -1,6 +1,5 @@
 angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service','session','$rootScope', function($scope, web3Service, session, $rootScope){
 
-    $scope.minePassword = "";
     $scope.mineAccount  = "";
     $scope.connectionHost = "";
     $scope.connectionPort = "";
@@ -13,6 +12,24 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
     $scope.isMining = false;
     $scope.peerToAdd = "";
     $scope.mineThreads = 1;
+
+    $(document).on('change', '.btn-file :file', function() {
+        var input = $(this),
+            numFiles = input.get(0).files ? input.get(0).files.length : 1,
+            label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+        input.trigger('fileselect', [numFiles, label]);
+    });
+
+    $(document).ready( function() {
+        $('#selectGenesis').on('fileselect', function(event, numFiles, file) {
+            $scope.genesisPath = this.files[0].path;
+            $scope.$apply('genesisPath');
+        });
+        $('#selectChain').on('fileselect', function(event, numFiles, file) {
+            $scope.chainDir = this.files[0].path;
+            $scope.$apply('chainDir');
+        });
+    });
 
     if ($scope.status == 'mining')
         $scope.isMining = true;
@@ -32,11 +49,8 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
     if (localStorage.connectionHost)
         $scope.connectionHost = localStorage.connectionHost;
 
-    if (localStorage.minePassword)
-        $scope.minePassword = localStorage.minePassword;
-
     if (localStorage.mineAccount)
-        $scope.mineAccount = parseInt(localStorage.mineAccount);
+        $scope.mineAccount = localStorage.mineAccount;
 
     if (localStorage.autoMine == "true")
         $scope.autoMine = true;
@@ -49,21 +63,24 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
         $scope.nodeInfo = result;
     });
 
-    $scope.$watchGroup(["minePassword","mineAccount","autoMine","connectionHost","connectionPort","genesisPath","chainDir","verbosityLog","autoConnect"],function(newValues){
-        localStorage.minePassword = newValues[0];
-        localStorage.mineAccount = newValues[1];
-        localStorage.autoMine = newValues[2];
-        localStorage.connectionHost = newValues[3];
-        localStorage.connectionPort = newValues[4];
-        localStorage.genesisPath = newValues[5];
-        localStorage.chainDir = newValues[6];
-        localStorage.verbosityLog = newValues[7];
-        localStorage.autoConnect = newValues[8];
+    $scope.selectMineAccount = function(address){
+        $scope.mineAccount = address;
+    }
+
+    $scope.$watchGroup(["mineAccount","autoMine","connectionHost","connectionPort","genesisPath","chainDir","verbosityLog","autoConnect"],function(newValues){
+        localStorage.mineAccount = newValues[0];
+        localStorage.autoMine = newValues[1];
+        localStorage.connectionHost = newValues[2];
+        localStorage.connectionPort = newValues[3];
+        localStorage.genesisPath = newValues[4];
+        localStorage.chainDir = newValues[5];
+        localStorage.verbosityLog = newValues[6];
+        localStorage.autoConnect = newValues[7];
     })
 
     $scope.startMining = function(){
         $scope.loading = true;
-        web3Service.startMining(session.accounts[$scope.mineAccount],$scope.mineThreads,function(err,result){
+        web3Service.startMining($scope.mineAccount,$scope.mineThreads,function(err,result){
             $scope.loading = false;
             if (err)
                 console.error(err);

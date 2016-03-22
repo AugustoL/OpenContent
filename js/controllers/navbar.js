@@ -23,6 +23,10 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
         });
     };
 
+    $scope.debugClick = function(){
+        web3Service.superDebug();
+    };
+
     $rootScope.$on('appUpdate', function(event, data) {
         $scope.txsWaiting = data.txsWaiting;
         $scope.indexInfo = data.indexInfo;
@@ -63,8 +67,19 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
     $scope.newAddress = function() {
         $("#passwordModal").modal('show');
         $scope.modalSubmit = function(){
-            web3Service.newAddress($scope.passModal);
             $("#passwordModal").modal('hide');
+            $scope.loading = true;
+            web3Service.newAddress($scope.passModal,function(err){
+                if (err){
+                    $scope.loading = false;
+                    $("#alerts").append("<div class=\"alert alert-danger alert-dismissible\" role=\"alert\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>"+err.message.toString()+"</div>");
+                } else {
+                    $scope.accounts = web3Service.getAccounts();
+                    session.loadAccounts($scope.accounts);
+                    $scope.loading = false;
+                }
+            });
+
         }
     }
 

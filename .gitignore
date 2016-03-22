@@ -1,6 +1,5 @@
 node_modules
 build
 cache
-blockchain/chaindata/*
 blockchain/keystore/*
 blockchain/nodekey

@@ -1,7 +1,7 @@
 angular.module('OCApp.controllers').controller('settingsCtrl',['$scope','web3Service', function($scope, web3Service){
 
     var win = require("nw.gui").Window.get();
-    
+
     $scope.saveSettings = function(){
 
     }
@@ -11,6 +11,11 @@ angular.module('OCApp.controllers').controller('settingsCtrl',['$scope','web3Ser
             win.closeDevTools();
         else
             win.showDevTools();
+    };
+
+    $scope.clearStorage = function() {
+        console.log("Clearing storage");
+        localStorage.clear();
     };
 
 }]);
