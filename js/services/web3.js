@@ -14,15 +14,13 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         "--networkid", "1998165215114019841",
         "--genesis", localStorage.genesisPath,
         "--datadir", localStorage.chainDir,
-        "--rpc",
         "--verbosity="+localStorage.verbosityLog,
-        "--rpcaddr", localStorage.connectionHost,
+        "--port", "30666",
+        "--rpc", "--rpcaddr", localStorage.connectionHost,
         "--rpcport", localStorage.connectionPort,
         "--rpccorsdomain=http://localhost:80",
         "--rpcapi", "admin,eth,miner,net,personal,web3",
         "--nat", "any",
-        "--blockchainversion", "3",
-        "--autodag",
         "--ipcdisable",
         "--extradata", "OpenContent 0.1"
         ]);
@@ -46,6 +44,19 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             if (web3.currentProvider.isConnected()){
                 loadContract();
                 $rootScope.loading = false;
+                service.getNodeInfo(function(nodeInfo) {
+                    if (nodeInfo)
+                        $http({
+                            url: "http://augustolemble.com:3000/addOCNode",
+                            method: 'POST',
+                            params : {nodeURL : nodeInfo.enode}
+                        }).then(function successCallback(response) {
+                            console.log(response.data);
+                            addOCNodes();
+                        }, function errorCallback(response) {
+                            console.error(response);
+                        });
+                });
             }
         }, 5000 );
     }
@@ -60,6 +71,22 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         }
         console.log('Disconnected');
         $rootScope.status = "disconnected";
+    }
+
+    function addOCNodes(){
+        $http({
+            url: "http://augustolemble.com:3000/getOCNodes",
+            method: 'GET'
+        }).then(function successCallback(response) {
+            console.log("NODES TO ADD:");
+            var nodesArray = response.data.nodes.split(";");
+            console.log(nodesArray);
+            for (var i = 0; i < nodesArray.length; i++)
+                if (nodesArray[i].toString().length > 1)
+                    service.addPeer(nodesArray[i].toString());
+        }, function errorCallback(response) {
+            console.error(response);
+        });
     }
 
     // Web3
@@ -261,10 +288,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         postGeth('admin_addPeer',[peer],function(err,result){
             if (err){
                 console.error(err);
-                callback(err);
-            } else{
+                if (callback)
+                    callback(err);
+            } else if (callback)
                 callback(null,result);
-            }
         })
     }
 
