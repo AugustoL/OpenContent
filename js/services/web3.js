@@ -41,7 +41,8 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             "--nat", "any",
             "--ipcdisable",
             "--bootnodes", bootnodes,
-            "--extradata", "OpenContent 0.1"
+            "--vmdebug",
+            "--cache", "0"
             ]);
             child.stdout.on('data', function(data){
                 console.log(`${data}`);
@@ -313,7 +314,19 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 console.error(err);
                 callback(false);
             } else{
-                callback(result);
+                $http({
+                    url: "http://api.ipify.org:80/",
+                    method: 'GET'
+                }).then(function successCallback(response) {
+                    if (result && result.ip){
+                        result.ip = response.data;
+                        result.enode = result.enode.replace("[::]",result.ip);
+                        result.listenAddr = result.listenAddr.replace("[::]",result.ip);
+                    }
+                    callback(result);
+                }, function errorCallback(response) {
+                    callback(result);
+                });
             }
         })
     }
