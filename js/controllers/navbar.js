@@ -9,12 +9,7 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
     $scope.loading = true;
 
     $scope.txsWaiting = [];
-    if (localStorage.txsWaiting && localStorage.txsWaiting.toString().length > 1){
-        if (localStorage.txsWaiting.toString().indexOf(",") > 0)
-            $scope.txsWaiting = localStorage.txsWaiting.toString().split(",");
-        else
-            $scope.txsWaiting.push(localStorage.txsWaiting);
-    }
+
     $scope.openBoard = function(board, page){
         $scope.loadView('home');
         $rootScope.$broadcast('boardChange', {
@@ -122,7 +117,6 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
         $scope.balance = balance;
     }
 
-    $scope.txsWaiting = web3Service.txsWaiting;
     $scope.indexInfo = web3Service.indexInfo;
     $scope.accounts = web3Service.getAccounts();
     session.loadAccounts($scope.accounts);

@@ -64,7 +64,7 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
     });
 
     web3Service.getPeers(function(err,result){
-        console.log(result);
+        console.log("peers",result);
         $scope.peersConnected = 0;
         if (result)
             $scope.peersConnected = result.length;

@@ -1,8 +1,16 @@
 =============== Mar 24, 2016 (ART) ===============
-12:03:21.213782 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-12:03:21.213958 db@open opening
-12:03:21.214027 journal@recovery F·1
-12:03:21.215658 journal@recovery recovering @56
-12:03:21.300058 mem@flush created L0@58 N·1 S·156B "blo..um-,v1845":"blo..um-,v1845"
-12:03:21.301605 db@janitor F·6 G·0
-12:03:21.301632 db@open done T·87.661092ms
+14:08:50.236464 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+14:08:50.236676 db@open opening
+14:08:50.236762 journal@recovery F·1
+14:08:50.242037 journal@recovery recovering @72
+14:08:50.345053 mem@flush created L0@74 N·1 S·156B "blo..um-,v17271":"blo..um-,v17271"
+14:08:50.346001 db@janitor F·7 G·0
+14:08:50.346025 db@open done T·109.324343ms
+14:08:50.346508 table@compaction L0·4 -> L1·1 S·592KiB Q·17272
+14:08:50.468098 table@build created L1@77 N·5715 S·411KiB "\x00.\x8f..;\xf1\xac,v4147":"\xff\xdd9..$$l,v10427"
+14:08:50.512790 table@compaction committed F-4 S-181KiB Ke·0 D·10282 T·166.183747ms
+14:08:50.512888 table@remove removed @74
+14:08:50.513028 table@remove removed @71
+14:08:50.513079 table@remove removed @68
+14:08:50.513109 table@remove removed @65
+14:08:50.513176 table@remove removed @64

@@ -5,6 +5,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     $rootScope.loading = true;
     $rootScope.isConnected = false;
 
+    if (!localStorage.txsWaiting || (localStorage.txsWaiting[0] == "undefined")){
+        service.txsWaiting = [];
+    }
+
     service.startGeth = function() {
         console.log('Starting geth');
         $rootScope.loading = true;
@@ -297,6 +301,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
 
     service.addPeer = function(peer, callback){
         postGeth('admin_addPeer',[peer],function(err,result){
+            console.log(result);
             if (err){
                 console.error(err);
                 if (callback)
@@ -742,7 +747,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     };
 
     setInterval( function() {
-        if (web3.currentProvider.isConnected())
+        if (web3.currentProvider.isConnected() && (service.txsWaiting[0] != "undefined"))
             checkTxsWaiting();
     }, 3000 );
 
