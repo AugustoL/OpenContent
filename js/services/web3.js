@@ -21,8 +21,12 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             url: "http://augustolemble.com:3000/getOCNodes",
             method: 'GET'
         }).then(function(response) {
-            if (response.data.nodes)
-                bootnodes = response.data.nodes.replace(";", " ");
+            var nodesArray = response.data.nodes.split(";");
+            console.log("Peers to add:",nodesArray);
+            for (var i = 0; i < nodesArray.length; i++)
+                if (nodesArray[i].toString().length > 1)
+                    bootnodes = bootnodes +" "+nodesArray[i].toString();
+
             console.log("Bootnodes: ",bootnodes);
 
             var child = require('child_process').spawn(gethPath, [
