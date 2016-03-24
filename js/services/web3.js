@@ -13,58 +13,74 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         console.log('Starting geth');
         $rootScope.loading = true;
         var gethPath = "geth/geth";
+        var bootnodes = "";
         if (window.navigator.platform.indexOf('Windows') > -1)
             gethPath = "geth/geth.exe";
-        var child = require('child_process').spawn(gethPath, [
-        "--networkid", "19981652151140",
-        "--genesis", localStorage.genesisPath,
-        "--datadir", localStorage.chainDir,
-        "--verbosity="+localStorage.verbosityLog,
-        "--rpc", "--rpcaddr", localStorage.connectionHost,
-        "--rpcport", localStorage.connectionPort,
-        "--rpccorsdomain=http://localhost:80",
-        "--rpcapi", "admin,eth,miner,net,personal,web3",
-        "--nat", "any",
-        "--ipcdisable",
-        "--extradata", "OpenContent 0.1"
-        ]);
-        child.stdout.on('data', function(data){
-            console.log(`${data}`);
+
+        $http({
+            url: "http://augustolemble.com:3000/getOCNodes",
+            method: 'GET'
+        }).then(function(response) {
+            if (response.data.nodes)
+                bootnodes = response.data.nodes.replace(";", " ");
+            console.log("Bootnodes: ",bootnodes);
+
+            var child = require('child_process').spawn(gethPath, [
+            "--networkid", "19981652151140",
+            "--genesis", localStorage.genesisPath,
+            "--datadir", localStorage.chainDir,
+            "--verbosity="+localStorage.verbosityLog,
+            "--rpc", "--rpcaddr", localStorage.connectionHost,
+            "--rpcport", localStorage.connectionPort,
+            "--rpccorsdomain=http://localhost:80",
+            "--rpcapi", "admin,eth,miner,net,personal,web3",
+            "--nat", "any",
+            "--ipcdisable",
+            "--bootnodes", bootnodes,
+            "--extradata", "OpenContent 0.1"
+            ]);
+            child.stdout.on('data', function(data){
+                console.log(`${data}`);
+            });
+            child.stderr.on('data', function(data) {
+                console.log(`${data}`);
+            });
+            child.on('close', function(code) {
+                console.log(`child process exited with code ${code}`);
+            });
+            child.on('exit', function(code) {
+                console.log(`child process exited.`);
+            });
+            localStorage.gethPid = child.pid;
+            setTimeout( function() {
+                web3.setProvider(new web3.providers.HttpProvider("http://"+localStorage.connectionHost+":"+localStorage.connectionPort));
+                if (web3.currentProvider.isConnected()){
+                    console.log('Connected');
+                    loadContract();
+                    $rootScope.loading = false;
+                    service.getNodeInfo(function(nodeInfo) {
+                        if (nodeInfo)
+                            $http({
+                                url: "http://augustolemble.com:3000/addOCNode",
+                                method: 'POST',
+                                params : {nodeURL : nodeInfo.enode}
+                            }).then(function(response) {
+                                if (response.data.success)
+                                    console.log("Peer URL added");
+                                else
+                                    console.log("Peer URL already added");
+                                addOCNodes();
+                            }, function(response) {
+                                console.error(response);
+                            });
+                    });
+                }
+            }, 5000 );
+
+        }, function(response) {
+            console.error(response);
         });
-        child.stderr.on('data', function(data) {
-            console.log(`${data}`);
-        });
-        child.on('close', function(code) {
-            console.log(`child process exited with code ${code}`);
-        });
-        child.on('exit', function(code) {
-            console.log(`child process exited.`);
-        });
-        localStorage.gethPid = child.pid;
-        setTimeout( function() {
-            web3.setProvider(new web3.providers.HttpProvider("http://"+localStorage.connectionHost+":"+localStorage.connectionPort));
-            if (web3.currentProvider.isConnected()){
-                console.log('Connected');
-                loadContract();
-                $rootScope.loading = false;
-                service.getNodeInfo(function(nodeInfo) {
-                    if (nodeInfo)
-                        $http({
-                            url: "http://augustolemble.com:3000/addOCNode",
-                            method: 'POST',
-                            params : {nodeURL : nodeInfo.enode}
-                        }).then(function successCallback(response) {
-                            if (response.data.success)
-                                console.log("Peer URL added");
-                            else
-                                console.log("Peer URL already added");
-                            addOCNodes();
-                        }, function errorCallback(response) {
-                            console.error(response);
-                        });
-                });
-            }
-        }, 5000 );
+
     }
     service.stopGeth = function() {
         console.log('Stopping geth');
