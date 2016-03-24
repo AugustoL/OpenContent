@@ -1,4 +1,8 @@
 node_modules
 build
 cache
-blockchain/**/*
+blockchain/chaindata
+blockchain/dapp
+blockchain/keystore
+blockchain/nodes
+blockchain/nodekey
