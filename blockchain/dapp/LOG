@@ -1,9 +1,0 @@
-=============== Mar 24, 2016 (ART) ===============
-14:14:54.719845 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-14:14:54.719978 db@open opening
-14:14:54.720044 journal@recovery F·1
-14:14:54.721365 journal@recovery recovering @46
-14:14:54.722115 db@janitor F·2 G·0
-14:14:54.722163 db@open done T·2.170586ms
-14:27:29.941844 db@close closing
-14:27:29.942606 db@close done T·757.273µs

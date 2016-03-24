@@ -16,11 +16,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         if (window.navigator.platform.indexOf('Windows') > -1)
             gethPath = "geth/geth.exe";
         var child = require('child_process').spawn(gethPath, [
-        "--networkid", "1998165215114019841",
+        "--networkid", "19981652151140",
         "--genesis", localStorage.genesisPath,
         "--datadir", localStorage.chainDir,
         "--verbosity="+localStorage.verbosityLog,
-        "--port", "30666",
         "--rpc", "--rpcaddr", localStorage.connectionHost,
         "--rpcport", localStorage.connectionPort,
         "--rpccorsdomain=http://localhost:80",
