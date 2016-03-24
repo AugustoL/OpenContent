@@ -1,7 +1,7 @@
-=============== Mar 23, 2016 (ART) ===============
-18:26:52.380667 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-18:26:52.380804 db@open opening
-18:26:52.380898 journal@recovery F·1
-18:26:52.381032 journal@recovery recovering @24
-18:26:52.387571 db@janitor F·2 G·0
-18:26:52.387593 db@open done T·6.777315ms
+=============== Mar 24, 2016 (ART) ===============
+12:03:21.301989 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+12:03:21.302083 db@open opening
+12:03:21.302124 journal@recovery F·1
+12:03:21.302597 journal@recovery recovering @34
+12:03:21.304108 db@janitor F·2 G·0
+12:03:21.304138 db@open done T·2.034191ms

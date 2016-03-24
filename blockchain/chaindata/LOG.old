@@ -1,13 +1,8 @@
-=============== Mar 23, 2016 (ART) ===============
-18:26:52.311531 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-18:26:52.324977 db@open opening
-18:26:52.325073 journal@recovery F·1
-18:26:52.326340 journal@recovery recovering @38
-18:26:52.379322 mem@flush created L0@41 N·3 S·266B "blo..um-,v38":"\xc5\xd2F..\x85\xa4p,v39"
-18:26:52.380266 db@janitor F·4 G·0
-18:26:52.380295 db@open done T·55.295214ms
-18:28:13.996059 table@compaction L0·1 -> L1·1 S·863B Q·975
-18:28:14.043660 table@build created L1@44 N·11 S·597B "Blo..ion,v8":"\xc5\xd2F..\x85\xa4p,v39"
-18:28:14.111114 table@compaction committed F-1 S-266B Ke·0 D·3 T·114.983972ms
-18:28:14.111214 table@remove removed @41
-18:28:14.111254 table@remove removed @40
+=============== Mar 24, 2016 (ART) ===============
+12:03:21.213782 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+12:03:21.213958 db@open opening
+12:03:21.214027 journal@recovery F·1
+12:03:21.215658 journal@recovery recovering @56
+12:03:21.300058 mem@flush created L0@58 N·1 S·156B "blo..um-,v1845":"blo..um-,v1845"
+12:03:21.301605 db@janitor F·6 G·0
+12:03:21.301632 db@open done T·87.661092ms

@@ -124,7 +124,7 @@
             <button class="btn btn-sm btn-default pull-right button-margin-sides" ng-click="syncForm = 'connect'"><span class="fa fa-plug"></span> Connect</button>
             <button class="btn btn-sm btn-default pull-right button-margin-sides" ng-click="syncForm = 'mine'"><span class="fa fa-hand-grab-o"></span> Mine</button>
         </h3>
-        Your node URL: {{nodeInfo.ip}}:{{nodeInfo.ports.listener}}<br>
+        {{peersConnected}} peers conencted.<br>
         Your peer ID:<br>
         <pre class="peerID">{{nodeInfo.enode}}</pre>
         <div ng-show="isMining">

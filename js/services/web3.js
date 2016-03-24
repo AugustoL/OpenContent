@@ -7,6 +7,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
 
     service.startGeth = function() {
         console.log('Starting geth');
+        $rootScope.loading = true;
         var gethPath = "geth/geth";
         if (window.navigator.platform.indexOf('Windows') > -1)
             gethPath = "geth/geth.exe";
@@ -37,11 +38,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             console.log(`child process exited.`);
         });
         localStorage.gethPid = child.pid;
-        $rootScope.loading = true;
-        console.log('Connected');
         setTimeout( function() {
             web3.setProvider(new web3.providers.HttpProvider("http://"+localStorage.connectionHost+":"+localStorage.connectionPort));
             if (web3.currentProvider.isConnected()){
+                console.log('Connected');
                 loadContract();
                 $rootScope.loading = false;
                 service.getNodeInfo(function(nodeInfo) {
@@ -51,7 +51,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                             method: 'POST',
                             params : {nodeURL : nodeInfo.enode}
                         }).then(function successCallback(response) {
-                            console.log(response.data);
+                            if (response.data.success)
+                                console.log("Peer URL added");
+                            else
+                                console.log("Peer URL already added");
                             addOCNodes();
                         }, function errorCallback(response) {
                             console.error(response);
@@ -78,14 +81,22 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             url: "http://augustolemble.com:3000/getOCNodes",
             method: 'GET'
         }).then(function successCallback(response) {
-            console.log("NODES TO ADD:");
             var nodesArray = response.data.nodes.split(";");
-            console.log(nodesArray);
+            console.log("Peers to add:",nodesArray);
             for (var i = 0; i < nodesArray.length; i++)
                 if (nodesArray[i].toString().length > 1)
                     service.addPeer(nodesArray[i].toString());
         }, function errorCallback(response) {
             console.error(response);
+        });
+    }
+
+    service.getPeers = function(callback){
+        postGeth('admin_peers',[],function(err,result){
+            if (err)
+                callback(err)
+            else
+                callback(null,result);
         });
     }
 
@@ -731,7 +742,8 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     };
 
     setInterval( function() {
-        checkTxsWaiting();
+        if (web3.currentProvider.isConnected())
+            checkTxsWaiting();
     }, 3000 );
 
     function postGeth(action ,params, callback){

@@ -1,15 +1,15 @@
-=============== Mar 23, 2016 (ART) ===============
-18:28:54.624519 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-18:28:54.624828 db@open opening
-18:28:54.624891 journal@recovery F·1
-18:28:54.658350 journal@recovery recovering @50
-18:28:54.768049 mem@flush created L0@53 N·3229 S·111KiB "n:\x00..ver,v33872":"n:\xff..ing,v33046"
-18:28:54.769868 db@janitor F·4 G·0
-18:28:54.769891 db@open done T·145.052632ms
-18:28:54.792426 table@compaction L0·1 -> L1·1 S·654KiB Q·34642
-18:28:54.880085 table@build created L1@56 N·10177 S·588KiB "n:\x00..ing,v17566":"version,v1"
-18:28:54.913678 table@compaction committed F-1 S-66KiB Ke·0 D·2547 T·120.253472ms
-18:28:54.913788 table@remove removed @53
-18:28:54.913928 table@remove removed @52
-18:30:22.725162 db@close closing
-18:30:22.725353 db@close done T·188.186µs
+=============== Mar 24, 2016 (ART) ===============
+12:04:28.148290 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+12:04:28.148465 db@open opening
+12:04:28.148520 journal@recovery F·1
+12:04:28.148651 journal@recovery recovering @71
+12:04:28.235351 mem@flush created L0@74 N·1401 S·54KiB "n:\x01..ail,v112505":"n:\xff..ing,v111405"
+12:04:28.237076 db@janitor F·4 G·0
+12:04:28.237099 db@open done T·88.621983ms
+12:04:28.241680 table@compaction L0·1 -> L1·1 S·1MiB Q·112737
+12:04:28.380336 table@build created L1@77 N·20859 S·1MiB "n:\x00..ing,v44874":"version,v1"
+12:04:28.414313 table@compaction committed F-1 S-49KiB Ke·0 D·1284 T·172.580582ms
+12:04:28.414402 table@remove removed @74
+12:04:28.414648 table@remove removed @73
+12:15:28.760638 db@close closing
+12:15:28.779441 db@close done T·18.793815ms

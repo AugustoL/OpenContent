@@ -63,6 +63,13 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
         $scope.nodeInfo = result;
     });
 
+    web3Service.getPeers(function(err,result){
+        console.log(result);
+        $scope.peersConnected = 0;
+        if (result)
+            $scope.peersConnected = result.length;
+    });
+
     $scope.selectMineAccount = function(address){
         $scope.mineAccount = address;
     }
@@ -107,6 +114,9 @@ angular.module('OCApp.controllers').controller('syncCtrl',['$scope','web3Service
     $scope.disconnect = function() {
         web3Service.stopGeth();
     }
+
+    $scope.connectionPort = "8545";
+    $scope.connectionHost = "127.0.0.1";
 
     $scope.stopMining = function(){
         web3Service.stopMining();
