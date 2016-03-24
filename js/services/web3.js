@@ -40,9 +40,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             "--rpcapi", "admin,eth,miner,net,personal,web3",
             "--nat", "any",
             "--ipcdisable",
-            "--bootnodes", bootnodes,
-            "--vmdebug",
-            "--cache", "0"
+            "--bootnodes", bootnodes
             ]);
             child.stdout.on('data', function(data){
                 console.log(`${data}`);
