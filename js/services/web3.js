@@ -481,13 +481,22 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     };
 
     service.getIndexInfo = function(){
-        var indexInfo = web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).getIndexInfo.call();
-        return {
-            version : $filter("hexToString")(indexInfo[0]),
-            users : parseInt(indexInfo[1]),
-            boards : parseInt(indexInfo[2]),
-            posts : parseInt(indexInfo[3])
-        };
+        if (!web3.currentProvider.isConnected() || (!service.indexContract)){
+            return {
+                version : "0",
+                users : 0,
+                boards : 0,
+                posts : 0
+            };
+        } else {
+            var indexInfo = web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).getIndexInfo.call();
+            return {
+                version : $filter("hexToString")(indexInfo[0]),
+                users : parseInt(indexInfo[1]),
+                boards : parseInt(indexInfo[2]),
+                posts : parseInt(indexInfo[3])
+            };
+        }
     };
 
     service.addComment = function (post_address, text) {
