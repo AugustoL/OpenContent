@@ -15,9 +15,8 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         var gethPath = "geth/geth";
         var bootnodes = "";
         console.log(window.navigator.platform);
-        if (window.navigator.platform.indexOf('Windows') > -1)
+        if (window.navigator.platform.indexOf('Win') > -1)
             gethPath = "geth/geth.exe";
-
         $http({
             url: "http://augustolemble.com:3000/getOCNodes",
             method: 'GET'
@@ -27,9 +26,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             for (var i = 0; i < nodesArray.length; i++)
                 if (nodesArray[i].toString().length > 1)
                     bootnodes = bootnodes +" "+nodesArray[i].toString();
-
             console.log("Bootnodes: ",bootnodes);
-
             var child = require('child_process').spawn(gethPath, [
             "--networkid", "2695666",
             "--genesis", localStorage.genesisPath,
@@ -81,11 +78,9 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                     });
                 }
             }, 5000 );
-
         }, function(response) {
             console.error(response);
         });
-
     }
     service.stopGeth = function() {
         console.log('Stopping geth');
@@ -278,6 +273,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 console.error(err);
             service.indexContract = JSON.parse(compiled);
             service.indexAddress = address;
+            localStorage.indexAddress = address;
             console.log("Index Contract address: "+service.indexAddress);
             web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).log().watch(function(error, result){
                 console.log($filter('hexToString')(result.args.message));
