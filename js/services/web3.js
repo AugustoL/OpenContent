@@ -147,6 +147,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                 console.log(sync);
             } else {
                 console.log('Restarting geth');
+                /*
                 if (window.navigator.platform.indexOf('Windows') > -1){
                     require('child_process').exec('Taskkill /PID '+localStorage.gethPid, function(err){
                         if (!err)
@@ -161,7 +162,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
                         else
                             console.error(err);
                     });
-                }
+                }*/
             }
         }
     });
