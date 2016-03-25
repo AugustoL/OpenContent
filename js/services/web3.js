@@ -178,11 +178,25 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     }
 
     service.unloackAccount = function(address,password,callback){
-        postGeth('personal_unlockAccount',[address,password],function(err,result){
+        /*postGeth('personal_unlockAccount',[address,password,0],function(err,result){
             if (err)
                 callback(err)
             else
                 callback(null,result);
+        });*/
+        localStorage.postGethID ++;
+        $http({
+            url: "http://localhost:8545",
+            method: 'POST',
+            headers: {"Content-type": "application/json"},
+            data: '{"jsonrpc":"2.0","method":"personal_unlockAccount","params":[\"'+address+'\",\"'+password+'\",0],"id":'+localStorage.postGethID+'}'
+        }).then(function successCallback(response) {
+            if (response.data.error)
+                callback(response.data.error);
+            else
+                callback(null, response.data.result)
+        }, function errorCallback(response) {
+            callback(response.data);
         });
     };
 
@@ -787,11 +801,11 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         localStorage.postGethID ++;
         var parameters = "";
         if (params.length == 1){
-            parameters = "\""+params[0]+"\"";
+            parameters = "\""+params[0].toString()+"\"";
         } else if (params.length > 1){
-            parameters = "\""+params[0]+"\"";
+            parameters = "\""+params[0].toString()+"\"";
             for (var i = 1; i < params.length; i++)
-                parameters += ",\""+params[i]+"\"";
+                parameters += ",\""+params[i].toString()+"\"";
         }
         console.log('making postGeth: '+'{"jsonrpc":"2.0","method":"'+action+'","params":['+parameters+'],"id":'+localStorage.postGethID+'}');
         $http({
