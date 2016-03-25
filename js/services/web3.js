@@ -14,6 +14,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         $rootScope.loading = true;
         var gethPath = "geth/geth";
         var bootnodes = "";
+        console.log(window.navigator.platform);
         if (window.navigator.platform.indexOf('Windows') > -1)
             gethPath = "geth/geth.exe";
 
@@ -139,10 +140,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
         service.startGeth();
     }
 
-    web3.eth.isSyncing(function(error, sync){
+    web3.eth.isSyncing(function(err, sync){
         if (err)
             console.error(err);
-        if(!error) {
+        if(!err) {
             if(sync === true) {
                 console.log("Reset sync");
                web3.reset(true);
@@ -384,7 +385,7 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             console.log("Mining: "+web3.eth.mining);
             console.log("Hasrate: "+web3.eth.hashrate);
             console.log("Peers: "+web3.net.peerCount);
-            console.log("Index code:");
+            console.log("Index "+localStorage.indexAddress+" code:");
             console.log(web3.eth.getCode(localStorage.indexAddress).toString().substring(0,200));
             console.log("#--------------------- ########## ---------------------#");
         } else {
