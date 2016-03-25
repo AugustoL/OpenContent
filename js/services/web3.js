@@ -30,9 +30,10 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             console.log("Bootnodes: ",bootnodes);
 
             var child = require('child_process').spawn(gethPath, [
-            "--networkid", "19981652151140",
+            "--networkid", "2695666",
             "--genesis", localStorage.genesisPath,
             "--datadir", localStorage.chainDir,
+            "--port", "30666",
             "--verbosity="+localStorage.verbosityLog,
             "--rpc", "--rpcaddr", localStorage.connectionHost,
             "--rpcport", localStorage.connectionPort,
@@ -178,12 +179,6 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     }
 
     service.unloackAccount = function(address,password,callback){
-        /*postGeth('personal_unlockAccount',[address,password,0],function(err,result){
-            if (err)
-                callback(err)
-            else
-                callback(null,result);
-        });*/
         localStorage.postGethID ++;
         $http({
             url: "http://localhost:8545",
