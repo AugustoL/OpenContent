@@ -22,10 +22,13 @@ angular.module('OCApp.controllers').controller('homeCtrl',['$scope', 'web3Servic
     });
 
     $scope.loadPosts = function(){
+        $scope.indexInfo = web3Service.getIndexInfo();
         var limit = parseInt($scope.page*10);
         $scope.posts = [];
         if (limit == 0)
             limit = 10;
+        console.log($scope.boardAddress);
+        console.log($scope.indexInfo);
         if ($scope.boardAddress == '0x0'){
             for (var i = 0; i < limit; i++)
                 if (i < parseInt($scope.indexInfo.posts))

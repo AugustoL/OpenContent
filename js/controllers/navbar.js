@@ -24,14 +24,12 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
 
     $rootScope.$on('appUpdate', function(event, data) {
         $scope.txsWaiting = data.txsWaiting;
-        $scope.indexInfo = data.indexInfo;
         if (($scope.account) && ($scope.account.address != "0x0000000000000000000000000000000000000000")){
             $scope.getAccountInfo();
             $scope.refreshBalance();
             $scope.$apply('account');
         }
         $scope.$apply('accounts');
-        $scope.$apply('indexInfo');
         $scope.$apply('txsWaiting');
     });
 
@@ -117,7 +115,7 @@ angular.module('OCApp.controllers').controller('navBarCtrl',['$scope', 'session'
         $scope.balance = balance;
     }
 
-    $scope.indexInfo = web3Service.indexInfo;
+    $scope.indexInfo = web3Service.getIndexInfo();
     $scope.accounts = web3Service.getAccounts();
     session.loadAccounts($scope.accounts);
     if ($scope.autoUnlock){

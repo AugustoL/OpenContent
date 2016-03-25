@@ -285,15 +285,8 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
             web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).logAddress().watch(function(error, result){
                 console.log(result.args.message);
             });
-            var indexInfo = web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).getIndexInfo.call();
-            var index_info = {
-                version : $filter("hexToString")(indexInfo[0]),
-                users : parseInt(indexInfo[1]),
-                boards : parseInt(indexInfo[2]),
-                posts : parseInt(indexInfo[3])
-            };
-            service.indexInfo = index_info;
-            console.log("Index Info: Version "+index_info.version+" ; "+index_info.users+" Users ; "+index_info.boards+" Boards ; "+index_info.posts+" Posts");
+            var indexInfo = service.getIndexInfo();
+            console.log("Index Info: Version "+indexInfo.version+" ; "+indexInfo.users+" Users ; "+indexInfo.boards+" Boards ; "+indexInfo.posts+" Posts");
             $rootScope.status = "connected";
             if (localStorage.autoMine == "true"){
                 service.startMining(localStorage.mineAccount,localStorage.mineThreads,function(err,mining){
@@ -488,7 +481,13 @@ angular.module( 'OCApp.services' ).factory( 'web3Service', [ 'session', '$rootSc
     };
 
     service.getIndexInfo = function(){
-        return web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).getIndexInfo.call();
+        var indexInfo = web3.eth.contract(service.indexContract.OpenContentIndex.info.abiDefinition).at(localStorage.indexAddress).getIndexInfo.call();
+        return {
+            version : $filter("hexToString")(indexInfo[0]),
+            users : parseInt(indexInfo[1]),
+            boards : parseInt(indexInfo[2]),
+            posts : parseInt(indexInfo[3])
+        };
     };
 
     service.addComment = function (post_address, text) {
